@@ -1,0 +1,17 @@
+
+# ------- DO NOT EDIT ------- #
+PATH_ROOT = ""
+
+VERSION = "0.5.1"
+VERSION_CUI = "0.3.0"
+VERSION_GUI = "0.4.1"
+VERSION_CONFIGURATION = "1.0.0"
+VERSION_PROJECT_LAUNCH = "1.0.0"
+VERSION_PROJECT_SETUP = "1.0.0"
+VERSION_PROJECT_UPDATE = "1.0.0"
+
+PATH_USERCONFIG = ""
+FILE_USERCONFIG = "userconfig.json"
+
+USER_CONFIGURATION = {}
+# --------------------------- #
