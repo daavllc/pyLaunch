@@ -4,7 +4,7 @@ import sys
 import subprocess
 import json
 
-import config
+import helpers.config as config
 
 from user.setup import Setup
 
@@ -25,7 +25,7 @@ class Launch:
 
         # Run setup script and install required packages
         Setup(self.PyPath)
-        self.Launcher()
+        self.pyLaunch()
 
     def Initialize(self) -> bool:
         self.PyPath = GetPython()
@@ -33,7 +33,7 @@ class Launch:
             return False
         return True
 
-    def Launcher(self):
+    def pyLaunch(self):
         ReturnValue = None
         UserCodes = []
         UserArgs = []
@@ -94,7 +94,7 @@ def GetPython():
 
 def old():
     if not os.path.exists("confpath.txt"):
-        print("It looks like Launcher isn't configured. Please run 'start.py' to configure it.")
+        print("It looks like pyLaunch isn't configured. Please run 'start.py' to configure it.")
         input("Press enter to exit")
         sys.exit(0)
     with open("confpath.txt", "r", encoding="utf-8") as f:

@@ -6,7 +6,7 @@ import urllib.request
 import shutil
 from zipfile import ZipFile
 
-import config
+import helpers.config as config
 
 class Update:
     def __init__(self):

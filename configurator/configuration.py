@@ -1,4 +1,4 @@
-import config
+import helpers.config as config
 
 class Configuration:
     def __init__(self):

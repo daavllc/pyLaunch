@@ -1,6 +1,6 @@
 import webbrowser
 
-import config
+import helpers.config as config
 
 from user.update import Update
 from user.launch import Launch
@@ -19,7 +19,7 @@ class CUI:
         self.InitSetup()
         if self.Status[0] and self.Status[1] and self.Status[2]:
             print("Launching!")
-            self.Launch.Launcher()
+            self.Launch.pyLaunch()
         else:
             print("Unable to launch [", end="")
             print("Update: ", end="")

@@ -1,7 +1,7 @@
 import json
 import os
 
-import config
+import helpers.config as config
 
 def Serialize(data: dict):
     if not os.path.exists(config.PATH_USERCONFIG):

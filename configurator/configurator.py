@@ -9,7 +9,7 @@ class Configurator:
         self.Configuration = Configuration()
 
     def New(self, UI: str) -> bool:
-        """ Launcher has not been configured, so let's configure it """
+        """ pyLaunch has not been configured, so let's configure it """
         if UI == "GUI":
             self.UI = GUI()
         else:
@@ -18,5 +18,5 @@ class Configurator:
         
 
     def Load(self) -> None:
-        """ Launcher is configured, load that configuration and execute """
+        """ pyLaunch is configured, load that configuration and execute """
         self.Configuration.data = Deserialize()

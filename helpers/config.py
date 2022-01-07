@@ -1,8 +1,9 @@
 
 # ------- DO NOT EDIT ------- #
-PATH_ROOT = ""
+PATH_ROOT: str = ""
+LOG_CONF: dict = ""
 
-VERSION = "0.5.1"
+VERSION = "0.5.2"
 VERSION_CUI = "0.3.0"
 VERSION_GUI = "0.4.1"
 VERSION_CONFIGURATION = "1.0.0"
@@ -13,5 +14,5 @@ VERSION_PROJECT_UPDATE = "1.0.0"
 PATH_USERCONFIG = ""
 FILE_USERCONFIG = "userconfig.json"
 
-USER_CONFIGURATION = {}
+USER_CONFIGURATION: dict = {}
 # --------------------------- #

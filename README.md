@@ -1,8 +1,8 @@
-# Launcher
+# pyLaunch
  Python project setup, updater, and launcher
 
 ## Purpose:
-Increase project productivity and provide features easily. Once installed as a git submodule (or downloaded), placed in a project and configured, it automatically provides updates, dependancy installation, and launcher. It automatically finds the required version of python, launches projects with it. In addition, Launcher:Launch allows custom exit values, which can be used to reload source code quickly and enable easier code editing.
+Increase project productivity and provide features easily. Once installed as a git submodule (or downloaded), placed in a project and configured, it automatically provides updates, dependancy installation, and launcher. It automatically finds the required version of python, launches projects with it. In addition, pyLaunch:Launch allows custom exit values, which can be used to reload source code quickly and enable easier code editing.
 
 ## Details:
  - Project lead: [Anonoei](https://github.com/Anonoei)
@@ -20,7 +20,7 @@ Increase project productivity and provide features easily. Once installed as a g
      - [X] Update/Launch/Setup
    - [X] GUI
      - [X] Update/Launch/Setup
- - [X] Launcher UI
+ - [X] Configurator UI
    - [ ] Better input protection
    - [X] CUI
      - [X] Provide help for formatting
@@ -39,24 +39,24 @@ Increase project productivity and provide features easily. Once installed as a g
 
 ## Configuration
 
-### [Setup](https://github.com/daavofficial/Launcher/blob/main/user/setup.py)
+### [Setup](https://github.com/daavofficial/pyLaunch/blob/main/user/setup.py)
  - Automatic dependancy installation
  - Variables:
    - PythonVersion (Required Python Version [ex: 3.10])
    - PythonFolder (Internal)
    - Packages (list of required packages, used as pypiName:importName [ex: pyyaml:yaml])
   
-### [Update](https://github.com/daavofficial/Launcher/blob/main/user/update.py)
+### [Update](https://github.com/daavofficial/pyLaunch/blob/main/user/update.py)
  - Automatic update checking, downloading and installing
  - Variables:
    - Organization (GitHub organization/user [ex: daavofficial])
-   - Repository (Repository Name [ex: Launcher])
+   - Repository (Repository Name [ex: pyLaunch])
    - Branch ([ex: main])
    - VersionPath (Project path to file containing version [ex: /config.py])
    - Find (Line to grab from VersionPath [ex: VERSION = ])
    - Token (GitHub token for private repositories)
 
-### [Launch](https://github.com/daavofficial/Launcher/blob/main/user/launch.py)
+### [Launch](https://github.com/daavofficial/pyLaunch/blob/main/user/launch.py)
  - Locates required Python version, and provides custom error catching, allowing project reloading for faster development, or launching with arguments
  - Variables:
    - ProjectRoot (Relative path to project root [ex: ..])
@@ -67,17 +67,17 @@ Increase project productivity and provide features easily. Once installed as a g
 ## Installation
  - GitHub project
    1. Open git terminal in your repository folder
-   2. Run `git submodule add https://github.com/daavofficial/Launcher.git`
-   3. Open the new `Launcher` folder
+   2. Run `git submodule add https://github.com/daavofficial/pyLaunch.git`
+   3. Open the new `pyLaunch` folder
    4. Launch
-      - Run [start.py](https://github.com/daavofficial/Launcher/blob/main/start.py)
-      - Double Click [example-launch-gui.bat](https://github.com/daavofficial/Launcher/blob/main/example-launch-gui.bat) (Windows)
+      - Run [start.py](https://github.com/daavofficial/pyLaunch/blob/main/start.py)
+      - Double Click [example-launch-gui.bat](https://github.com/daavofficial/pyLaunch/blob/main/example-launch-gui.bat) (Windows)
    5. Configure, by following the prompts provided
 
 ## Download from source
- 1. `git clone https://github.com/daavofficial/Launcher.git`
- 3. Open 'Launcher' folder.
- 4. Run [start.py](https://github.com/daavofficial/Launcher/blob/main/start.py) or use an example-launch file
+ 1. `git clone https://github.com/daavofficial/pyLaunch.git`
+ 3. Open 'pyLaunch' folder.
+ 4. Run [start.py](https://github.com/daavofficial/pyLaunch/blob/main/start.py) or use an example-launch file
 
 ## License
 Copyright © 2022 DAAV, LLC

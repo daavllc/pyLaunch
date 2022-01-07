@@ -6,7 +6,7 @@ class CUI:
     def Launch(self):
         self.Configuration = Configuration()
         print("It looks like this project has no configuration!")
-        print("If you're not the developer of this program, please\ntell them: 'Launcher has no configuration'\nTo use this program, launch it directly")
+        print("If you're not the developer of this program, please\ntell them: 'pyLaunch has no configuration'\nTo use this program, launch it directly")
         print("\nDevelopers:")
         input("Press enter to continue")
         self._Configure()
@@ -21,7 +21,7 @@ class CUI:
         print("\tGitHub details for update checking/downloading")
         print("Launch")
         print("\tProvides error catching, and python reloading")
-        input("Press enter to begin configuring Launcher:Setup")
+        input("Press enter to begin configuring pyLaunch:Setup")
         self._ConfigureSetup()
         self._ConfigureUpdate()
         self._ConfigureLaunch()
@@ -30,7 +30,7 @@ class CUI:
         Serialize(self.Configuration.data)
 
     def _ConfigureSetup(self):
-        print("\nLauncher:Setup")
+        print("\npyLaunch:Setup")
         print("------------------")
         while True:
             while True:
@@ -105,11 +105,11 @@ class CUI:
             return True
 
     def _ConfigureUpdate(self):
-        print("\nLauncher:Update")
+        print("\npyLaunch:Update")
         print("------------------")
         while True:
             Organization = input("Enter your github organization/username (ex: daavofficial) > ")
-            Repository = input("Enter your github repository (ex: Launcher) > ")
+            Repository = input("Enter your github repository (ex: pyLaunch) > ")
             Branch = input("Enter your github branch (ex: main) > ")
             VersionPath = input("Enter your project version path (ex: /src/config/config.py) > ")
             Find = input("Enter the string to locate the version (ex: VERSION = ) > ")
@@ -128,10 +128,10 @@ class CUI:
         return True
 
     def _ConfigureLaunch(self):
-        print("\nLauncher:Launch")
+        print("\npyLaunch:Launch")
         print("------------------")
         while True:
-            ProjectRoot = input("Please provide the relative path to your project from Launcher (ex: ..) > ")
+            ProjectRoot = input("Please provide the relative path to your project from pyLaunch (ex: ..) > ")
             ProjectMain = input("Please provide the project path to your main script (ex /src/main.py) > ")
             self.Configuration['Launch']['ProjectRoot'] = ProjectRoot
             self.Configuration['Launch']['ProjectMain'] = ProjectMain

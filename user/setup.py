@@ -2,7 +2,7 @@ import sys
 import subprocess
 import importlib.util
 
-import config
+import helpers.config as config
 
 class Setup:
     def __init__(self, PyPath: str):
