@@ -2,13 +2,14 @@
  Python project setup, updater, and launcher
 
 ## Purpose:
-Increase project productivity and provide features easily. Once installed as a git submodule (or downloaded), placed in a project and configured, it automatically provides updates, dependancy installation, and launcher. It automatically finds the required version of python, launches projects with it. In addition, pyLaunch:Launch allows custom exit values, which can be used to reload source code quickly and enable easier code editing.
+Increase project productivity and provide features easily. Once installed as a git submodule (or downloaded), placed in a project and configured, it automatically provides updates, dependency installation, and launcher. It automatically finds the required version of python, launches projects with it. In addition, pyLaunch:Launch allows custom exit values, which can be used to reload source code quickly and enable easier code editing.
 
 ## Details:
  - Project lead: [Anonoei](https://github.com/Anonoei)
  - Langauge: Python 3.6+ (due to f-strings, tested on 3.10)
  - License: MIT
  - Dependancies: None
+ - Documentation: [docs.daav.us](https://docs.daav.us/pyLaunch)
 
 ----
 
