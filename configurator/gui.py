@@ -2,15 +2,18 @@
 import tkinter as tk
 from tkinter import ttk
 import webbrowser
+import time
 
-from .configuration import Configuration
-from .serializer import Serialize
 import helpers.config as config
 from helpers.style import Style
 import helpers.gui as gh
+from helpers.logger import Logger
 s = Style.Get()
 
 class GUI:
+    def __init__(self, configurator):
+        self.Configurator = configurator
+        self.log = Logger("pyLaunch.GUI", "gui.log")
     class Storage:
         pass
     def Launch(self):
@@ -22,7 +25,6 @@ class GUI:
         self.ws = tk.Tk()
 
         self.Completed = False
-        self.Configuration = Configuration()
         self.ConfigStatus = [False, False, False]
         self.Configuring = False
     
@@ -32,16 +34,6 @@ class GUI:
 
     def SetTheme(self, theme: str):
         s.Set(theme)
-        self.ws.destroy()
-        self.Initialize()
-
-    def DarkMode(self):
-        s.Set('dark')
-        self.ws.destroy()
-        self.Initialize()
-
-    def LightMode(self):
-        s.Set('light')
         self.ws.destroy()
         self.Initialize()
 
@@ -273,7 +265,7 @@ class GUI:
             self.fr_cft_finish_label.config(text="Incomplete")
         else:
             self.fr_cft_finish_label.config(text="Done!")
-            Serialize(self.Configuration.data)
+            self.Configurator.Save()
             self.Completed = True
             self.ws.destroy()
             return True
@@ -293,6 +285,7 @@ class GUI:
             self.fr_cft_launch_status.config(text="Not complete")
 
     def ClearConfigure(self):
+        self.data = self.Storage()
         self.fr_cfr_title.config(text="Select a configuration on the left")
         for item in self.Frames.CGR.winfo_children():
             item.destroy()
@@ -300,23 +293,33 @@ class GUI:
             self.fr_cfr_popup_btn.destroy()
             self.fr_cfr_popup_btn = None
 
+##########################################################################################
+#
+#                                SETUP
+#
+##########################################################################################
     def ConfigureSetup(self):
         self.ClearConfigure()
         self.Configuring = True
-        self.data.pypiName = []
-        self.data.importName = []
-        self.data.packagelist = []
+        self.data.packages = {}
+        self.data.tk_items = []
 
         self.fr_cfr_title.config(text="Setup Configuration", background=s.FRAME_BG_ALT, foreground=s.LABEL_FG)
 
         self.Frames.CGR_PythonVersion = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
         self.Frames.CGR_PythonVersion.grid(sticky='w', column=0, row=0, pady=5)
-        gh.Label(self.Frames.CGR_PythonVersion, justify="left", text="Required Python Version:", bg=0).grid(sticky='w', column=0, row=0)
+        gh.Label(self.Frames.CGR_PythonVersion, justify="left", text="Python Version:", bg=0).grid(sticky='w', column=0, row=0)
         self.data.PythonVersion = gh.Text(self.Frames.CGR_PythonVersion, width=5, height=1, bg=0)
         self.data.PythonVersion.grid(sticky='w', column=1, row=0, padx=5, pady=5)
+
+        self.Frames.CGR_MinimumPythonVersion = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
+        self.Frames.CGR_MinimumPythonVersion.grid(sticky='w', column=0, row=1, pady=5)
+        gh.Label(self.Frames.CGR_MinimumPythonVersion, justify="left", text="Minimum Python Version:", bg=0).grid(sticky='w', column=0, row=0)
+        self.data.MinimumPythonVersion = gh.Text(self.Frames.CGR_MinimumPythonVersion, width=5, height=1, bg=0)
+        self.data.MinimumPythonVersion.grid(sticky='w', column=1, row=0, padx=5, pady=5)
         
         self.Frames.CGR_Packages = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
-        self.Frames.CGR_Packages.grid(sticky='w', column=0, row=1, pady=5)
+        self.Frames.CGR_Packages.grid(sticky='w', column=0, row=2, pady=5)
 
         self.Frames.CGR_Package_Input = tk.Frame(self.Frames.CGR_Packages, background=s.FRAME_BG)
         self.Frames.CGR_Package_Input.grid(sticky='n', column=0, row=0, padx=5)
@@ -330,15 +333,17 @@ class GUI:
         gh.Label(self.Frames.CGR_Table, justify="left", width=10, text="pypiName", bg=1).grid(column=0, row=0)
         gh.Label(self.Frames.CGR_Table, justify="left", width=10, text="importName", bg=1).grid(column=1, row=0)
 
-        gh.Button(self.Frames.CGR_Package_Input, text="Finish", command=self.SetSetup, bg=1).grid(stick='s', pady=20)
+        self.StatusLabel = gh.Label(self.Frames.CGR_Package_Input, text="", width=20, wraplength=200, bg=0)
+        self.StatusLabel.grid(sticky='s')
+        gh.Button(self.Frames.CGR_Package_Input, text="Finish", command=self.SetSetup, bg=1).grid(sticky='s', pady=20)
 
     def DrawPackageList(self):
-        for row in self.data.packagelist:
+        for row in self.data.tk_items:
             for item in row:
                 item.destroy()
-        self.data.packagelist = []
+        self.data.tk_items = []
         index = 0
-        for py, imp in zip(self.data.pypiName, self.data.importName):
+        for py, imp in self.data.packages.items():
             bg = 0
             if index % 2:
                 bg = 1
@@ -346,54 +351,79 @@ class GUI:
             pyNameLabel.grid(sticky='w', column=0, row=index + 1)
             importNameLabel = gh.Label(self.Frames.CGR_Table, text=imp, justify="left", bg=bg)
             importNameLabel.grid(sticky='w', column=1, row=index + 1)
-            removeButton = gh.Button(self.Frames.CGR_Table, text="Remove", command=lambda index=index: self.RemovePackage(index), bg=0)
+            removeButton = gh.Button(self.Frames.CGR_Table, text="Remove", command=lambda key=py, index=index: self.RemovePackage(index, key), bg=0)
             removeButton.grid(column=2, row=index + 1, padx=5, pady=1)
-            self.data.packagelist.append([pyNameLabel, importNameLabel, removeButton])
+            self.data.tk_items.append([pyNameLabel, importNameLabel, removeButton])
             index += 1
 
     def AddPackage(self):
         package = self.data.PackageName.get("1.0", "end-1c")
         if ":" in package:
-            package = package.split(":")
-            self.data.pypiName.append(package[0])
-            self.data.importName.append(package[1])
+            if self.data.packages.get(package[0], None) is None:
+                package = package.split(":")
+                self.data.packages[package[0]] = package[1]
         else:
-            self.data.pypiName.append(package)
-            self.data.importName.append(package)
+            if self.data.packages.get(package, None) is None:
+                self.data.packages[package] = package
         self.DrawPackageList()
 
-    def RemovePackage(self, index: int):
-        self.data.pypiName.pop(index)
-        self.data.importName.pop(index)
+    def RemovePackage(self, index:int, key: str):
+        del self.data.packages[key]
+        for item in self.data.tk_items.pop(index):
+            item.destroy()
         self.DrawPackageList()
 
     def SetSetup(self):
-        self.Configuration['Setup']['PythonVersion'] = self.data.PythonVersion.get("1.0", "end-1c")
-        self.Configuration['Setup']['PythonFolder'] = "Python" + self.Configuration['Setup']['PythonVersion'].replace(".", "")
-        for py, imp in zip(self.data.pypiName, self.data.importName):
-            self.Configuration['Setup']['Packages'][py] = imp
-        self.data = self.Storage()
-        self.ConfigStatus[0] = True
-        self.UpdateStatus()
-        self.ClearConfigure()
-        print(str(self.Configuration.data['Setup']))
+        status = self.Configurator.Setup.Set(self.data.PythonVersion.get("1.0", "end-1c"), 
+                        self.data.MinimumPythonVersion.get("1.0", "end-1c"), self.data.packages)
 
+        if all(element == None for element in status):
+            self.ConfigStatus[0] = True
+            self.UpdateStatus()
+            self.StatusLabel.config(text="Done!")
+            self.ClearConfigure()
+            self.log.info(f"Stored Setup: {self.Configurator.Configuration.data['Setup']}")
+        else:
+            for stat in status:
+                if stat is not None:
+                    self.StatusLabel.config(text=stat)
+                    break
+            self.log.info(f"Setup configuration issues: {str(status)}")
+
+
+##########################################################################################
+#
+#                                UPDATE
+#
+##########################################################################################
     def ConfigureUpdate(self):
         self.ClearConfigure()
         self.Configuring = True
         self.fr_cfr_title.config(text="Update Configuration")
 
-        self.data.Update = {}
-        row = 0
+        self.data.Update = {'SkipCheck' : tk.BooleanVar()}
+
+        gh.Checkbutton(self.Frames.CGR, text="Skip update checking", variable=self.data.Update['SkipCheck'], command=self.SkipUpdate).grid(sticky='w', column=0, row=0)
+
+        row = 1
         for text in ['Organization', 'Repository', 'Branch', 'Version Path', 'Find', 'Token']:
             gh.Label(self.Frames.CGR, justify="left", text=text + ":", bg=0).grid(sticky='w', column=0, row=row)
             self.data.Update[text.replace(" ", "")] = gh.Text(self.Frames.CGR, width=40, height=1)
             self.data.Update[text.replace(" ", "")].grid(sticky='w', column=1, row=row, pady=5)
             row += 1
 
-        gh.Button(self.Frames.CGR, text="Finish", command=self.SetUpdate, bg=1).grid(stick='s', pady=20)
+        self.Frames.CGR_UpdateButtons = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
+        self.Frames.CGR_UpdateButtons.grid(sticky='w', column=0, row=row, pady=5)
+        self.StatusLabel = gh.LargeLabel(self.Frames.CGR_UpdateButtons, text="", bg=0)
+        self.StatusLabel.grid(sticky='s')
+        gh.Button(self.Frames.CGR_UpdateButtons, text="Finish", command=self.SetUpdate, bg=1).grid(sticky='s', pady=20)
+
+    def SkipUpdate(self):
+        self.Configurator.Update.SetSkipCheck(self.data.Update['SkipCheck'].get())
 
     def SetUpdate(self):
+        self.StatusLabel.config(text="Verifiying information with GitHub...")
+
         Organization = self.data.Update['Organization'].get("1.0", "end-1c")
         Repository = self.data.Update['Repository'].get("1.0", "end-1c")
         Branch = self.data.Update['Branch'].get("1.0", "end-1c")
@@ -401,44 +431,58 @@ class GUI:
         Find = self.data.Update['Find'].get("1.0", "end-1c")
         Token = self.data.Update['Token'].get("1.0", "end-1c")
 
-        self.Configuration['Update']['Organization'] = Organization
-        self.Configuration['Update']['Repository'] = Repository
-        self.Configuration['Update']['Branch'] = Branch
-        self.Configuration['Update']['VersionPath'] = VersionPath
-        self.Configuration['Update']['Find'] = Find
-        if Token == "": 
-            self.Configuration['Update']['Token'] = None
-        else:
-            self.Configuration['Update']['Token'] = Token
-        self.data = self.Storage()
-        self.ConfigStatus[1] = True
-        self.UpdateStatus()
-        self.ClearConfigure()
-        print(str(self.Configuration.data['Update']))
+        if not type(self.data.Update['SkipCheck']) == bool:
+            self.data.Update['SkipCheck'] = False
 
+        status = self.Configurator.Update.Set(Organization, Repository, Branch, VersionPath, Find, Token, self.data.Update['SkipCheck'])
+        if not type(status) == list:
+            self.StatusLabel.config(text="Unable to connect to the internet, config saved.")
+            self.ConfigStatus[1] = True
+            self.UpdateStatus()
+        elif all(element == None for element in status):
+            self.ConfigStatus[1] = True
+            self.UpdateStatus()
+            self.StatusLabel.config(text="Done!")
+            self.ClearConfigure()
+            self.log.info(f"Stored Update: {self.Configurator.Configuration.data['Update']}")
+        else:
+            for stat in status:
+                if stat is not None:
+                    self.StatusLabel.config(text=stat)
+                    break
+            self.log.info(f"Update configuration issues: {str(status)}")
+
+##########################################################################################
+#
+#                                LAUNCH
+#
+##########################################################################################
     def ConfigureLaunch(self):
         self.ClearConfigure()
         self.Configuring = True
-        self.data.errorcode = []
-        self.data.arguments = []
-        self.data.codelist = []
 
         self.fr_cfr_title.config(text="Launch Configuration")
 
+        self.data.codes = {}
+        self.data.tk_items = []
+        self.data.LaunchSkipCheck = tk.BooleanVar()
+
+        gh.Checkbutton(self.Frames.CGR, text="Skip update checking", variable=self.data.LaunchSkipCheck, command=self.SkipLaunchErrors).grid(sticky='w', column=0, row=0)
+
         self.Frames.CGR_ProjectPath = tk.Frame(self.Frames.CGR, background=s.FRAME_BG_ALT)
-        self.Frames.CGR_ProjectPath.grid(sticky='w', column=0, row=0, pady=5)
-        gh.Label(self.Frames.CGR_ProjectPath, justify="left", text="Project Path:", bg=0).grid(sticky='w', column=0, row=0)
+        self.Frames.CGR_ProjectPath.grid(sticky='w', column=0, row=1, pady=5)
+        gh.Label(self.Frames.CGR_ProjectPath, justify="left", text="Project Root:", bg=0).grid(sticky='w', column=0, row=0)
         self.data.ProjectPath = gh.Text(self.Frames.CGR_ProjectPath, width=30, height=1)
         self.data.ProjectPath.grid(sticky='w', column=1, row=0)
 
         self.Frames.CGR_ProjectMain = tk.Frame(self.Frames.CGR, background=s.FRAME_BG_ALT)
-        self.Frames.CGR_ProjectMain.grid(sticky='w', column=0, row=1, pady=5)
+        self.Frames.CGR_ProjectMain.grid(sticky='w', column=0, row=2, pady=5)
         gh.Label(self.Frames.CGR_ProjectMain, justify="left", text="Project Main:", bg=0).grid(sticky='w', column=0, row=0)
         self.data.ProjectMain = gh.Text(self.Frames.CGR_ProjectMain, width=30, height=1)
         self.data.ProjectMain.grid(sticky='w', column=1, row=0)
 
         self.Frames.CGR_ErrorCodes = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
-        self.Frames.CGR_ErrorCodes.grid(sticky='w', column=0, row=2)
+        self.Frames.CGR_ErrorCodes.grid(sticky='w', column=0, row=3)
 
         self.Frames.CGR_ErrorCodes_Input = tk.Frame(self.Frames.CGR_ErrorCodes, background=s.FRAME_BG)
         self.Frames.CGR_ErrorCodes_Input.grid(sticky='n', column=0, row=0)
@@ -452,27 +496,32 @@ class GUI:
         self.Frames.CGR_ErrorCodes_Table.grid(sticky='n', column=1, row=0)
         
         gh.Label(self.Frames.CGR_ErrorCodes_Table, justify="left", width=10, text="Code", bg=1).grid(column=0, row=0)
-        gh.Label(self.Frames.CGR_ErrorCodes_Table, justify="left", width=10, text="Arguments", bg=1).grid(column=1, row=0) 
+        gh.Label(self.Frames.CGR_ErrorCodes_Table, justify="left", width=10, text="Arguments", bg=1).grid(column=1, row=0)
 
-        gh.Button(self.Frames.CGR_ErrorCodes_Input, text="Finish", command=self.SetLaunch, bg=1).grid(stick='s', pady=20)
+        self.StatusLabel = gh.Label(self.Frames.CGR_ErrorCodes_Input, text="", width=20, wraplength=200, bg=0)
+        self.StatusLabel.grid(sticky='s')
+        gh.Button(self.Frames.CGR_ErrorCodes_Input, text="Finish", command=self.SetLaunch, bg=1).grid(sticky='s', pady=20)
+
+    def SkipLaunchErrors(self):
+        self.Configurator.Launch.SetSkipCheck(self.data.LaunchSkipCheck.get())
 
     def DrawCodeList(self):
-        for row in self.data.codelist:
+        for row in self.data.tk_items:
             for item in row:
                 item.destroy()
-        self.data.codelist = []
+        self.data.tk_items = []
         index = 0
-        for code, arg in zip(self.data.errorcode, self.data.arguments):
+        for code, arg in self.data.codes.items():
             bg = 0
             if index % 2:
                 bg = 1
-            codeLabel = gh.Label(self.Frames.CGR_ErrorCodes_Table, justify="left", text=code, bg=bg)
-            codeLabel.grid(sticky='w', column=0, row=index + 1)
-            argLabel = gh.Label(self.Frames.CGR_ErrorCodes_Table, justify="left", text=arg, bg=bg)
-            argLabel.grid(sticky='w', column=1, row=index + 1)
-            removeButton = gh.Button(self.Frames.CGR_ErrorCodes_Table, text="Remove", command=lambda index=index: self.RemoveCode(index), bg=1)
+            pyNameLabel = gh.Label(self.Frames.CGR_ErrorCodes_Table, text=code, justify="left", bg=bg)
+            pyNameLabel.grid(sticky='w', column=0, row=index + 1)
+            importNameLabel = gh.Label(self.Frames.CGR_ErrorCodes_Table, text=arg, justify="left", bg=bg)
+            importNameLabel.grid(sticky='w', column=1, row=index + 1)
+            removeButton = gh.Button(self.Frames.CGR_ErrorCodes_Table, text="Remove", command=lambda key=code, index=index: self.RemoveCode(index, key), bg=0)
             removeButton.grid(column=2, row=index + 1, padx=5, pady=1)
-            self.data.codelist.append([codeLabel, argLabel, removeButton])
+            self.data.tk_items.append([pyNameLabel, importNameLabel, removeButton])
             index += 1
 
     def AddCode(self):
@@ -480,28 +529,38 @@ class GUI:
         if not ":" in code:
             return
         code = code.split(":")
+        
         if len(code) > 2:
             return
         try:
             errorCode = int(code[0])
         except ValueError:
             return
-        self.data.errorcode.append(code[0])
-        self.data.arguments.append(code[1])
+        self.data.codes[code[0]] = code[1]
         self.DrawCodeList()
 
-    def RemoveCode(self, index: int):
-        self.data.errorcode.pop(index)
-        self.data.arguments.pop(index)
+    def RemoveCode(self, index: int, key: str):
+        del self.data.codes[key]
+        for item in self.data.tk_items.pop(index):
+            item.destroy()
         self.DrawCodeList()
 
     def SetLaunch(self):
-        self.Configuration['Launch']['ProjectRoot'] = self.data.ProjectPath.get("1.0", "end-1c")
-        self.Configuration['Launch']['ProjectMain'] = self.data.ProjectMain.get("1.0", "end-1c")
-        for code, arg in zip(self.data.errorcode, self.data.arguments):
-            self.Configuration['Launch'][code] = arg
-        self.data = self.Storage()
-        self.ConfigStatus[2] = True
-        self.UpdateStatus()
-        self.ClearConfigure()
-        print(str(self.Configuration.data['Launch']))
+        ProjectRoot = self.data.ProjectPath.get("1.0", "end-1c")
+        ProjectMain = self.data.ProjectMain.get("1.0", "end-1c")
+        SkipCheck = self.data.LaunchSkipCheck.get()
+
+        status = self.Configurator.Launch.Set(ProjectRoot, ProjectMain, self.data.codes, SkipCheck)
+        if all(element == None for element in status):
+            self.data = self.Storage()
+            self.ConfigStatus[2] = True
+            self.UpdateStatus()
+            self.StatusLabel.config(text="Done!")
+            self.ClearConfigure()
+            self.log.info(f"Stored Update: {self.Configurator.Configuration.data['Launch']}")
+        else:
+            for stat in status:
+                if stat is not None:
+                    self.StatusLabel.config(text=stat)
+                    break
+            self.log.info(f"Launch configuration issues: {str(status)}")

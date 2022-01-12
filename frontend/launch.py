@@ -6,7 +6,7 @@ import json
 
 import helpers.config as config
 
-from user.setup import Setup
+from frontend.setup import Setup
 
 class Launch:
     def __init__(self):

@@ -9,9 +9,9 @@ import helpers.config as config
 from helpers.style import Style
 import helpers.gui as gh
 
-from user.update import Update
-from user.launch import Launch
-from user.setup import Setup
+from frontend.update import Update
+from frontend.launch import Launch
+from frontend.setup import Setup
 
 s = Style.Get()
 
@@ -44,9 +44,11 @@ class GUI:
         loop.run_until_complete(self._LaunchAutomatic())
 
     def Automatic(self):
+        self.Init()
         thread = threading.Thread(target=self.CreateThread)
         thread.start()
-        self.ws.mainloop()
+
+        self.Runtime()
         if self.Status[0] and self.Status[1] and self.Status[2]:
             print("Launching!")
             self.Launch.pyLaunch()
@@ -72,113 +74,155 @@ class GUI:
 
     async def _LaunchAutomatic(self):
         StartTime = time.perf_counter()
-        while time.perf_counter() - StartTime < 1.0:
+        while time.perf_counter() - StartTime < 0.1:
             pass
-        self.InitUpdate()
-        if self.InitLaunch():
-            self.InitSetup()
-        self.ws.destroy()
+
+        if self.InitUpdate():
+            if self.InitLaunch():
+                self.InitSetup()
+                self.ws.destroy()
+
+    def Init(self):
+        self.Frames.Header = tk.Frame(self.ws, width=400, height=60, borderwidth=10, background=s.FRAME_BG)
+        self.Frames.Header.pack_propagate(0)
+        self.Frames.Header.pack(fill='both', side='top', expand='False')
+
+        self.StatusLabel = gh.LargeLabel(self.Frames.Header, text="", wraplength=250, bg=0)
+        self.StatusLabel.pack()
+        gh.FillHorizontalSeparator(self.Frames.Header, pady=5)
+
+        self.Frames.Body = tk.Frame(self.ws, background=s.FRAME_BG_ALT)
+        self.Frames.Body.pack(fill='both', side='left', expand='True')
 
     ### Update
     def InitUpdate(self) -> bool:
         self.ws.title(f"pyLaunch - Update")
         self.Update = Update()
-        self.Frames.Update = tk.Frame(self.ws, background=s.FRAME_BG)
-        self.Frames.Update.pack_propagate(0)
-        self.Frames.Update.pack(fill='both', side='left', expand='True')
-        if not self.Update.CheckConnection():
-            gh.LargeLabel(self.Frames.Update, text="Unable to connect to the internet", bg=0).pack()
+        self.Frames.Update = tk.Frame(self.Frames.Body, background=s.FRAME_BG)
+        self.Frames.Update.pack(fill='both', side='top', expand='True')
+
+        if not self.Update._CheckConnection():
+            self.StatusLabel.config(text="Unable to connect to the internet")
             self.Frames.Update.destroy()
             self.Status[0] = True
-            return True
-        self.StatusLabel = gh.LargeLabel(self.Frames.Update, text="Checking for update...", bg=0)
-        self.StatusLabel.pack(pady=20)
+            return
 
-        if self.Update.Check():
+        self.StatusLabel.config(text="Checking for update...")
+        status = self.Update.CheckVersions()
+        if type(status) == list:
+            if status[1]: # Can still continue
+                self.StatusLabel.config(text=status[0])
+                self.FinishUpdate()
+                return True
+            else:
+                self.StatusLabel.config(text=f"Error {status[0]}")
+                print(f"Error: {status}")
+                return False
+        elif status:
             self.StatusLabel.config(text="An update is available")
+            return self.UpdateLoop()
         else:
             self.StatusLabel.config(text="You have the latest version")
-            self.Frames.Update.destroy()
-            self.Status[0] = True
+            self.FinishUpdate()
             return True
 
+    def UpdateLoop(self) -> bool:
+        self.UpdateSelected = False
         self.Frames.Update_Available = tk.Frame(self.Frames.Update, background=s.FRAME_BG)
-        self.Frames.Update_Available.grid_propagate(0)
-        self.Frames.Update_Available.pack(fill='both', side='left', expand='False')
-        gh.LargeLabel(self.Frames.Update_Available, text=f"Update from [v{'.'.join(self.Update.Versions[0])}] to [v{'.'.join(self.Update.Versions[1])}]?", bg=0).grid(row=0)
-        gh.Button(self.Frames.Update_Available, text="Yes", callback=self.InstallUpdate, bg=0).grid(column=0, row=1)
-        gh.Button(self.Frames.Update_Available, text="No", callback=self.SkipUpdate, bg=0).grid(column=1, row=1)
+        self.Frames.Update_Available.pack(fill='both', side='top', expand='True')
+        gh.Label(self.Frames.Update_Available, text="Available").grid()
+
+        gh.LargeLabel(self.Frames.Update_Available, text=f"Update from [v{'.'.join([str(sec) for sec in self.Update.Versions[0]])}] to [v{'.'.join([str(sec) for sec in self.Update.Versions[1]])}]?", bg=0).grid(column=0, row=0, pady=5)
+        gh.Button(self.Frames.Update_Available, text="Yes", command=self.InstallUpdate, bg=0).grid(column=0, row=1)
+        gh.Button(self.Frames.Update_Available, text="No", command=self.SkipUpdate, bg=0).grid(column=1, row=1)
+
+        while self.UpdateSelected == False:
+            pass
+        return True
 
     def InstallUpdate(self):
         self.Frames.Update_Available.destroy()
+
         self.StatusLabel.config(text="Downloading update...")
-        if not self.Update.DownloadUpdate():
+        if not self.Update._DownloadUpdate():
             self.StatusLabel.config(text="Failed to download update")
         else:
-            self.StatusLabel.config(text="Complete! Installing...")
+            self.StatusLabel.config(text="Download complete! Installing...")
 
-        if not self.Update.InstallUpdate():
+        if not self.Update._InstallUpdate():
             self.StatusLabel.config(text="Failed to install update")
         else:
             self.StatusLabel.config(text="Update installed!")
-        self.Frames.Update.destroy()
-        self.Status[0] = True
+        self.UpdateSelected = True
+        self.FinishUpdate()
 
     def SkipUpdate(self):
-        self.Frames.Update_Available.destroy()
-        self.Frames.Update.destroy()
+        self.FinishUpdate()
+        self.UpdateSelected = True
+
+    def FinishUpdate(self):
         self.Status[0] = True
+        self.Frames.Update.destroy()
 
     ### Launch
     def InitLaunch(self):
         self.ws.title(f"pyLaunch - Launch")
         self.Launch = Launch()
-        self.Frames.Launch = tk.Frame(self.ws, background=s.FRAME_BG)
-        self.Frames.Launch.pack_propagate(0)
-        self.Frames.Launch.pack(fill='both', side='left', expand='True')
+        self.Frames.Launch = tk.Frame(self.Frames.Body, background=s.FRAME_BG)
+        self.Frames.Launch.pack(fill='both', side='top', expand='True')
         if not self.Launch.Initialize():
-            self.Frames.Launch_Failure = tk.Frame(self.Frames.Launch, background=s.FRAME_BG)
-            self.Frames.Launch_Failure.grid_propagate(0)
-            self.Frames.Launch_Failure.pack(fill='both', side='left', expand='True')
-            gh.LargeLabel(self.Frames.Launch_Failure, text=f"Unable to locate Python {config.USER_CONFIGURATION['Setup']['PythonVersion']}", bg=0).pack()
-            gh.LargeLabel(self.Frames.Launch_Failure, text=f"Please install Python {config.USER_CONFIGURATION['Setup']['PythonVersion']} and try again", bg=0).pack()
-            gh.Button(self.Frames.Launch_Failure, text="Downloads page", callback=lambda: webbrowser.open("https://www.python.org/downloads/")).pack()
+            self.LaunchLoop()
             return False
-        self.StatusLabel = gh.LargeLabel(self.Frames.Launch, text=f"Found Python {config.USER_CONFIGURATION['Setup']['PythonVersion']}. Starting Setup...", bg=0)
+        self.StatusLabel.config(text=f"Found Python {config.USER_CONFIGURATION['Setup']['PythonVersion']}. Starting Setup...")
         self.StatusLabel.pack(pady=20)
-        self.Frames.Launch.destroy()
-        self.Status[1] = True
+        self.FinishLaunch()
         return True
+
+    def LaunchLoop(self):
+        self.Frames.Launch_Failure = tk.Frame(self.Frames.Launch, background=s.FRAME_BG)
+        self.Frames.Launch_Failure.grid_propagate(0)
+        self.Frames.Launch_Failure.pack(fill='both', side='left', expand='True')
+        gh.LargeLabel(self.Frames.Launch_Failure, text=f"Unable to locate Python {config.USER_CONFIGURATION['Setup']['PythonVersion']}", bg=0).pack()
+        gh.LargeLabel(self.Frames.Launch_Failure, text=f"Please install Python {config.USER_CONFIGURATION['Setup']['PythonVersion']} and try again", bg=0).pack()
+        gh.Button(self.Frames.Launch_Failure, text="Downloads page", command=lambda: webbrowser.open("https://www.python.org/downloads/")).pack()
+
+        while True:
+            pass
+
+    def FinishLaunch(self):
+        self.Status[1] = True
+        self.Frames.Launch.destroy()
 
     ### Setup
     def InitSetup(self):
         self.ws.title(f"pyLaunch - Setup")
         self.Setup = Setup(self.Launch.PyPath)
-        self.Frames.Setup = tk.Frame(self.ws, background=s.FRAME_BG)
+        self.Frames.Setup = tk.Frame(self.Frames.Body, background=s.FRAME_BG)
         self.Frames.Setup.pack_propagate(0)
         self.Frames.Setup.pack(fill='both', side='left', expand='True')
         self.MissingPackages = self.Setup.GetRequired()
 
         if len(self.MissingPackages) == 0:
-            self.StatusLabel = gh.LargeLabel(self.Frames.Setup, text=f"All required packages are installed", bg=0)
-            self.StatusLabel.pack(pady=20)
+            self.StatusLabel.config(text=f"All required packages are installed")
             self.Status[2] = True
+            self.FinishSetup()
             return True
         else:
             if len(self.MissingPackages) == 1:
-                self.StatusLabel = gh.LargeLabel(self.Frames.Setup, text=f"{len(self.MissingPackages)} package needs to be installed", bg=0)
+                self.StatusLabel.config(text=f"{len(self.MissingPackages)} package needs to be installed")
             else:
-                self.StatusLabel = gh.LargeLabel(self.Frames.Setup, text=f"{len(self.MissingPackages)} packages need to be installed", bg=0)
-            self.StatusLabel.pack(pady=20)
+                self.StatusLabel.config(text=f"{len(self.MissingPackages)} packages need to be installed")
+
         self.Setup.UpdatePip()
         self.PackageIndex = 0
-        self.PackageLoop()
+        return self.PackageLoop()
         
     def PackageLoop(self):
         self.DrawPackage()
         while self.PackageIndex < len(self.MissingPackages):
             pass
         self.FinishSetup()
+        return True
 
     def DrawPackage(self):
         package = self.MissingPackages[self.PackageIndex]
@@ -219,13 +263,6 @@ class GUI:
 
     def FinishSetup(self):
         self.Frames.Setup.destroy()
-
-    ### Launch Project
-    def Success(self):
-        self.ws.destroy()
-
-    def Failure(self):
-        self.ws.destroy()
 
 if __name__ == "__main__":
     gui = GUI()

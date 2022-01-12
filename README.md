@@ -14,20 +14,25 @@ Increase project productivity and provide features easily. Once installed as a g
 
 ## Current status/roadmap:
  - [X] Documentation
+   - [X] In-depth documentation at [docs.daav.us/pyLaunch](https://docs.daav.us/pyLaunch)
    - [X] Basic overview/help (CUI/GUI)
- - [X] End-user UI
-   - [X] CUI
+ - [X] Frontend UI
+   - [X] [CUI](https://github.com/daavofficial/pyLaunch/blob/main/frontend/cui.py)
      - [X] Update/Launch/Setup
-   - [X] GUI
+   - [X] [GUI](https://github.com/daavofficial/pyLaunch/blob/main/frontend/cui.py)
+     - [X] Color Themes
      - [X] Update/Launch/Setup
  - [X] Configurator UI
-   - [ ] Better input protection
-   - [X] CUI
+   - [ ] Modify previous configuration
+   - [X] Better input protection
+   - [X] [CUI](https://github.com/daavofficial/pyLaunch/blob/main/configurator/cui.py)
+     - [X] Color Themes
      - [X] Provide help for formatting
      - [X] Modify all configuration options
-   - [X] GUI
+   - [X] [GUI](https://github.com/daavofficial/pyLaunch/blob/main/configurator/gui.py)
      - [X] Themes/color schemes (dark/light)
      - [X] Modify all configuration options
+ - [ ] Pull private repositories
  - [X] Arguments
  - [X] Saveable configurations
 
@@ -39,28 +44,32 @@ Increase project productivity and provide features easily. Once installed as a g
 
 ## Configuration
 
-### [Setup](https://github.com/daavofficial/pyLaunch/blob/main/user/setup.py)
+### [Setup](https://github.com/daavofficial/pyLaunch/blob/main/frontend/setup.py)
  - Automatic dependancy installation
  - Variables:
-   - PythonVersion (Required Python Version [ex: 3.10])
-   - PythonFolder (Internal)
+   - Python Version
+   - Minimum Python Version
+   - Python Folder (Internal)
    - Packages (list of required packages, used as pypiName:importName [ex: pyyaml:yaml])
   
-### [Update](https://github.com/daavofficial/pyLaunch/blob/main/user/update.py)
+### [Update](https://github.com/daavofficial/pyLaunch/blob/main/frontend/update.py)
  - Automatic update checking, downloading and installing
  - Variables:
-   - Organization (GitHub organization/user [ex: daavofficial])
-   - Repository (Repository Name [ex: pyLaunch])
-   - Branch ([ex: main])
+   - Organization
+   - Repository
+   - Branch
    - VersionPath (Project path to file containing version [ex: /config.py])
    - Find (Line to grab from VersionPath [ex: VERSION = ])
    - Token (GitHub token for private repositories)
+   - Skip Checking for updates
 
-### [Launch](https://github.com/daavofficial/pyLaunch/blob/main/user/launch.py)
+### [Launch](https://github.com/daavofficial/pyLaunch/blob/main/frontend/launch.py)
  - Locates required Python version, and provides custom error catching, allowing project reloading for faster development, or launching with arguments
  - Variables:
-   - ProjectRoot (Relative path to project root [ex: ..])
-   - ProjectMain (project path to the 'main' file [ex: /start.py])
+   - Project Root (Relative path to project root [ex: ..])
+   - Project Main (project path to the 'main' file [ex: /start.py])
+   - Error Codes (list of error codes, used as code:argument [ex: -2:-UI GUI])
+   - Skip error code checking
 
 ----
 

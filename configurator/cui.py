@@ -1,10 +1,9 @@
-
-from .configuration import Configuration
-from .serializer import Serialize
-
 class CUI:
+    def __init__(self, configurator):
+        self.Configurator = configurator
+    class Storage:
+        pass
     def Launch(self):
-        self.Configuration = Configuration()
         print("It looks like this project has no configuration!")
         print("If you're not the developer of this program, please\ntell them: 'pyLaunch has no configuration'\nTo use this program, launch it directly")
         print("\nDevelopers:")
@@ -21,29 +20,31 @@ class CUI:
         print("\tGitHub details for update checking/downloading")
         print("Launch")
         print("\tProvides error catching, and python reloading")
+        print("Additional documentation can be found at https://docs.daav.us/pyLaunch")
         input("Press enter to begin configuring pyLaunch:Setup")
         self._ConfigureSetup()
         self._ConfigureUpdate()
         self._ConfigureLaunch()
         print("It looks like you're finished!")
         print("Lets save and reload just to be sure it works.")
-        Serialize(self.Configuration.data)
+        self.Configurator.Save()
 
     def _ConfigureSetup(self):
+        data = self.Storage()
         print("\npyLaunch:Setup")
         print("------------------")
+        data.SkipCheck = False
         while True:
             while True:
-                PythonVersion = input("Required Python Version (ex: 3.10) > ")
-                if len(PythonVersion.split(".")) <= 1:
-                    if not 'y' in input(f"Are you sure you want Python {PythonVersion} (y/N) "):
-                        continue
-                self.Configuration['Setup']['PythonVersion'] = PythonVersion
-                self.Configuration['Setup']['PythonFolder'] = "Python" + PythonVersion.replace(".", "")
+                print("Enter your project's python version [ex: 3.10]")
+                data.PythonVersion = input(" > ")
+                print("Enter your projet's minimum Python version (leave blank for same as above)")
+                data.MinimumPythonVersion = input(" > ")
+                if 'n' in input("Are these correct? (Y/n) > "):
+                    continue
                 break
             while True:
-                pypiName = []
-                importName = []
+                data.packages = {}
                 done = False
                 print("Required python packages: ")
                 while True:
@@ -64,40 +65,41 @@ class CUI:
                             package = int(package)
                             if package == -1:
                                 print("Please verify the required packages:")
-                                for idx, package in enumerate(pypiName):
-                                    print(f"{package} : {importName[idx]}")
+                                for key, value in data.packages.items():
+                                    print(f"{key} : {value}")
                                 if 'y' in input("Is this correct? (y/N) > "):
-                                    done = True
-                                    for py, imp in zip(pypiName, importName):
-                                        self.Configuration['Setup']['Packages'][py] = imp
-                                    break
+                                    status = self.Configurator.Setup.Set(data.PythonVersion, data.MinimumPythonVersion, data.packages)
+                                    if all(element == None for element in status):
+                                        done = True
+                                        print("Set successfully!")
+                                        break
+                                    else:
+                                        for stat in status:
+                                            if stat is not None:
+                                                print(stat)
                             elif package == 0:
                                 break
                             elif package == 1:
-                                for idx, package in enumerate(pypiName):
-                                    print(f"{idx + 1}) {package} : {importName[idx]}")
+                                index = 1
+                                for key, value in data.packages.items():
+                                    print(f"{index}) {key} : {value}")
+                                    index += 1
                             elif package == 2:
-                                for idx, package in enumerate(pypiName):
-                                    print(f"{idx + 1}) {package} : {importName[idx]}")
-                                remove = input("Please specify which number to remove > ")
-                                try:
-                                    remove = int(remove)
-                                    if remove - 1 < len(pypiName):
-                                        pypiName.remove(remove)
-                                        importName.remove(remove)
-                                        break
-                                    else:
-                                        print("Please provide a valid number")
-                                except ValueError:
-                                    print("Please provide a number")
+                                index = 0
+                                for key, value in data.packages.items():
+                                    print(f"{key} : {value}")
+                                    index += 1
+                                remove = input("Please specify which package to remove > ")
+                                if data.packages.get(remove, None) is not None:
+                                    del data.packages[remove]
+                                else:
+                                    print("Please provide a valid package")
                         except ValueError:
                             if ":" in package:
                                 package = package.split(":")
-                                pypiName.append(package[0])
-                                importName.append(package[1])
+                                data.packages[package[0]] = package[1]
                             else:
-                                pypiName.append(package)
-                                importName.append(package)
+                                data.packages[package] = package
                     if done:
                         break
                 if done:
@@ -108,37 +110,54 @@ class CUI:
         print("\npyLaunch:Update")
         print("------------------")
         while True:
-            Organization = input("Enter your github organization/username (ex: daavofficial) > ")
-            Repository = input("Enter your github repository (ex: pyLaunch) > ")
-            Branch = input("Enter your github branch (ex: main) > ")
-            VersionPath = input("Enter your project version path (ex: /src/config/config.py) > ")
-            Find = input("Enter the string to locate the version (ex: VERSION = ) > ")
-            Token = input("Enter your GitHub token (only for private repositories) or press enter > ")
-            if 'y' in input("Are these all correct? (y/N) > "):
-                self.Configuration['Update']['Organization'] = Organization
-                self.Configuration['Update']['Repository'] = Repository
-                self.Configuration['Update']['Branch'] = Branch
-                self.Configuration['Update']['VersionPath'] = VersionPath
-                self.Configuration['Update']['Find'] = Find
-                if Token == "": 
-                    self.Configuration['Update']['Token'] = None
-                else:
-                    self.Configuration['Update']['Token'] = Token
+            print("Enter your GitHub organization/username (ex: daavofficial)")
+            Organization = input(" > ")
+            print("Enter your github repository (ex: pyLaunch)")
+            Repository = input(" > ")
+            print("Enter your github branch (ex: main)")
+            Branch = input(" > ")
+            print("Enter your project version path (ex: /src/config/config.py)")
+            VersionPath = input(" > ")
+            print("Enter the string to locate the version (ex: VERSION = )")
+            Find = input(" > ")
+            print("Enter your GitHub token (only for private repositories) or press enter")
+            Token = input(" > ")
+            print("Skip checking for updates (press enter for no)")
+            SkipCheck = input(" > ").lower()
+            if SkipCheck:
+                SkipCheck = True
+            else:
+                SkipCheck = False
+            if 'n' in input("Are these all correct? (Y/n) > "):
+                continue
+            status = self.Configurator.Update.Set(Organization, Repository, Branch, VersionPath, Find, Token, SkipCheck)
+            if all(element == None for element in status):
+                print("Set successfully!")
                 break
+            else:
+                for stat in status:
+                    if stat is not None:
+                        print(stat)
         return True
 
     def _ConfigureLaunch(self):
         print("\npyLaunch:Launch")
         print("------------------")
+        data = self.Storage()
         while True:
-            ProjectRoot = input("Please provide the relative path to your project from pyLaunch (ex: ..) > ")
-            ProjectMain = input("Please provide the project path to your main script (ex /src/main.py) > ")
-            self.Configuration['Launch']['ProjectRoot'] = ProjectRoot
-            self.Configuration['Launch']['ProjectMain'] = ProjectMain
+            print("Please provide the relative path to your project from pyLaunch (ex: ..)")
+            data.ProjectRoot = input(" > ")
+            print("Please provide the project path to your main script (ex /src/main.py)")
+            data.ProjectMain = input(" > ")
+            print("Skip checking return codes on exit? (press enter for no)")
+            data.SkipCheck = input(" > ")
+            if data.SkipCheck:
+                data.SkipCheck = True
+            else:
+                data.SkipCheck = False
             print("Launch uses exit codes to preform specific functions, or provide error information")
             print("For the best results, use small negative numbers")
-            errorCodes = []
-            arguments = []
+            data.codes = {}
             done = False
             while True:
                 print("\tAvailable commands: ")
@@ -154,32 +173,31 @@ class CUI:
                     code = input("Input an error code > ")
                     if code == "finish" or code == "f":
                         print("Please verify your exit codes:")
-                        for idx, code in enumerate(errorCodes):
-                            print(f"{code} : {arguments[idx]}")
+                        for key, value in data.codes.items():
+                            print(f"{key} : {value}")
                         if 'y' in input("Is this correct? (y/N) > "):
                             done = True
-                            for code, arg in zip(errorCodes, arguments):
-                                self.Configuration['Launch'][code] = arg
-                            break
+                            status = self.Configurator.Launch.Set(data.ProjectRoot, data.ProjectMain, data.codes, data.SkipCheck)
+                            if all(element == None for element in status):
+                                print("Set successfully!")
+                                break
+                            else:
+                                for stat in status:
+                                    if stat is not None:
+                                        print(stat)
                     elif code == "help" or code == "h":
                         break
                     elif code == "list" or code == "l":
-                        for idx, code in enumerate(errorCodes):
-                            print(f"{idx + 1}) {code} : {arguments[idx]}")
+                        for key, value in data.codes.items():
+                            print(f"{key} : {value}")
                     elif code == "remove" or code == "r":
-                        for idx, code in enumerate(errorCodes):
-                            print(f"{idx + 1}) {code} : {arguments[idx]}")
-                        remove = input("Please specify which number to remove > ")
-                        try:
-                            remove = int(remove)
-                            if remove - 1 < len(errorCodes):
-                                errorCodes.remove(remove)
-                                arguments.remove(remove)
-                                break
-                            else:
-                                print("Please provide a valid number")
-                        except ValueError:
-                            print("Please provide a number")
+                        for key, value in data.codes.items():
+                            print(f" {key} : {value}")
+                        remove = input("Please specify which code to remove > ")
+                        if data.codes.get(remove, None) is not None:
+                            del data.codes[remove]
+                        else:
+                            print("Please provide a valid code")
                     else:
                         code = code.split(":")
                         if len(code) <= 1 or len(code) > 2:
@@ -191,11 +209,7 @@ class CUI:
                             except ValueError:
                                 print("You must provide an integer for the error code")
                                 continue
-                            if errorCode == -1:
-                                print("-1 is reserved for updates")
-                                continue
-                            errorCodes.append(code[0])
-                            arguments.append(code[1])
+                            data.codes[code[0]] = code[1]
                 if done:
                     break
             if done:

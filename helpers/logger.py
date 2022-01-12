@@ -35,19 +35,22 @@ class Logger:
         self.WriteToFile = config.LOG_CONF['write']
 
     def __log(self, level: Level, message: str):
-        if level < self.level:
-            return
-
         datetime = dt.datetime.now()
         msg = datetime.strftime("%Y-%m-%d %H:%M:%S ")
         msg += f"<{self.Name}> {level.name}: {message}"
 
-        if self.WriteToConsole:
+        if level > self.level and self.WriteToConsole:
             print(msg)
 
         if self.WriteToFile:
-            with open(f"{config.PATH_ROOT}/logs/{self.File}", "a") as f:
-                f.write(msg + "\n")
+            try:
+                with open(f"{config.PATH_ROOT}{os.sep}logs{os.sep}{self.File}", "a") as f:
+                    f.write(msg + "\n")
+            except FileNotFoundError:
+                if not os.path.exists(f"{config.PATH_ROOT}{os.sep}logs"):
+                    os.mkdir(f"{config.PATH_ROOT}{os.sep}logs")
+                with open(f"{config.PATH_ROOT}{os.sep}logs{os.sep}{self.File}", "w") as f:
+                    f.write(msg + "\n")
 
     def debug(self, message: str):
         self.__log(self.Level.DEBUG, message)

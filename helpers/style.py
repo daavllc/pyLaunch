@@ -66,7 +66,7 @@ class Style:
 
         self.TEXT_FG    = "#000000"
         self.TEXT_BG    = self.FRAME_BG
-        self.TEXT_ERROR = "2200000"
+        self.TEXT_ERROR = "#2200000"
 
         self.LABEL_FG   = "#000000"
         self.LABEL_BG   = self.FRAME_BG
@@ -82,7 +82,7 @@ class Style:
 
         self.TEXT_FG    = "#FFFFFF"
         self.TEXT_BG    = self.FRAME_BG
-        self.TEXT_ERROR = "FF0000"
+        self.TEXT_ERROR = "#FF0000"
 
         self.LABEL_FG   = "#FFFFFF"
         self.LABEL_BG   = self.FRAME_BG
@@ -98,7 +98,7 @@ class Style:
 
         self.TEXT_FG    = "#FFFFFF"
         self.TEXT_BG    = self.FRAME_BG
-        self.TEXT_ERROR = "FF00000"
+        self.TEXT_ERROR = "#FF00000"
 
         self.LABEL_FG   = "#FFFFFF"
         self.LABEL_BG   = self.FRAME_BG
@@ -114,7 +114,7 @@ class Style:
 
         self.TEXT_FG    = "#FFFFFF"
         self.TEXT_BG    = self.FRAME_BG
-        self.TEXT_ERROR = "FF0000"
+        self.TEXT_ERROR = "#FF0000"
 
         self.LABEL_FG   = "#FFFFFF"
         self.LABEL_BG   = self.FRAME_BG
