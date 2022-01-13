@@ -50,13 +50,11 @@ class Launcher:
         ReturnValue = None
         UserCodes = []
         UserArgs = []
-        for key, value in config.USER_CONFIGURATION['Launch'].items():
+        for key, value in config.USER_CONFIGURATION['Launch']['ErrorCodes'].items():
             try:
                 key = int(key) # If key is integer, it's a return code
             except ValueError:
                 continue
-            UserCodes.append(int(key))
-            UserArgs.append(value)
     
         def call(args):
             try:
@@ -77,16 +75,20 @@ class Launcher:
             elif ReturnValue == 0: # Exit
                 sys.exit(0)
             else: # Project Exit codes
+                valid = False
                 for code, arg in zip(UserCodes, UserArgs):
                     if code < 0:
-                        code = 4294967296 + code # max value of 32-bit integer
+                        code = 4294967296 + code # max value of 32-bit integer 4294967295
                     if ReturnValue == code:
                         ClearScreen()
                         ReturnValue = call(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']} {arg}")
-                        continue
+                        valid = True
+                        break
+                if valid:
+                    continue
             print("-----------------")
             print(f"It looks like something went wrong... Error: {ReturnValue}")
-            print(f"Feel free to submit an issue at 'https://github.com/{config.USER_CONFIGURATION['Update']['Organization']}/{config.USER_CONFIGURATION['Update']['Repository']}/issues")
+            print(f"Feel free to submit an issue at https://github.com/{config.USER_CONFIGURATION['Update']['Organization']}/{config.USER_CONFIGURATION['Update']['Repository']}/issues")
             if 'n' in input("Reload? (Y/n)"):
                 sys.exit(0)
             ReturnValue = None
