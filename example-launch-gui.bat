@@ -2,5 +2,5 @@
 :: Windows launch example
 :: This should be moved to the root of your project, and the path should be updated below
 
-python start.py -m
+python start.py
 PAUSE

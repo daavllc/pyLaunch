@@ -8,32 +8,47 @@ import urllib.request
 from zipfile import ZipFile
 
 import helpers.config as config
+from helpers.logger import Logger
 
 
-class Update:
+class Updater:
+    __instance = None
+
+    @staticmethod
+    def Get():
+        if Updater.__instance is None:
+            return Updater()
+        return Updater.__instance
+
     def __init__(self):
-        self.DeleteFolders = ["src"]
-        self.UpdateFolder = "updatefiles"
+        if Updater.__instance is not None:
+            return
+        else:
+            self.log = Logger("pyLaunch.Frontend.Updater", "frontend.log")
+            self.DeleteFolders = ["src"]
+            self.UpdateFolder = "updatefiles"
 
-    def _Automatic(self) -> bool:
-        if not self._CheckConnection():
+    def Automatic(self) -> bool:
+        if not self.CheckConnection():
             return False
         UpdateAvailable = self.CheckVersions()
         if UpdateAvailable:
             print(f"An update is available! [v{'.'.join(self.Versions[1])}]")
             if not 'n' in input(f"Would you like to update from [{'.'.join(self.Versions[0])}]? (Y/n) > "):
-                if self._DownloadUpdate():
-                    return self._InstallUpdate()
+                if self.DownloadUpdate():
+                    return self.InstallUpdate()
         return False
 
-    def _CheckConnection(self) -> bool:
+    def CheckConnection(self) -> str:
+        if config.USER_CONFIGURATION['Update']['SkipCheck']:
+            return "Skipping update check"
         try:
             urllib.request.urlopen('http://google.com')
             return True
         except Exception as e:
-            return False # Unable to connect to the internet
+            return "Unable to connect to the internet" # Unable to connect to the internet
 
-    def _DownloadUpdate(self) -> bool:
+    def DownloadUpdate(self) -> bool:
         response = None
         try:
             response = urllib.request.urlopen(f"https://api.github.com/repos/{config.USER_CONFIGURATION['Update']['Organization']}/{config.USER_CONFIGURATION['Update']['Repository']}/zipball/{config.USER_CONFIGURATION['Update']['Branch']}")
@@ -76,7 +91,7 @@ class Update:
         os.chdir(config.PATH_ROOT)
         return True
 
-    def _InstallUpdate(self) -> bool:
+    def InstallUpdate(self) -> bool:
         print("Installing new version")
         for file in os.listdir(config.USER_CONFIGURATION['Launch']['ProjectRoot']):
             if os.path.isdir(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}"):

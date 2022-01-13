@@ -43,6 +43,7 @@ def main():
     configurator = parser.add_argument_group("configurator", "configurator arguments")
     configurator.add_argument("-R", "--reset", dest="Reset", help="clear logs and configuration", action='store_true')
     configurator.add_argument("-m", "--modify", dest="Modify", help="modify configuration", action='store_true')
+    configurator.add_argument("-s", "--skip", dest="Skip", help="skip checking configuration version", action='store_true')
     configurator.add_argument("-CI", "--interface", dest="CI", help="interface for pyLaunch configurator [default=GUI]", choices=['CUI', 'GUI'], default='GUI')
 
     counter = parser.add_argument_group("counter", "recursivly count a folder's files with extention")
@@ -65,11 +66,26 @@ def main():
         print(f" Copyright ©2022 DAAV, LLC - Version {config.VERSION}")
         print(f" Licensed under the MIT license. See LICENSE for details.\n")
 
+    # Setup paths
+    config.PATH_ROOT = os.path.abspath(".")
+    if not config.PATH_ROOT.split(os.sep)[-1] == "pyLaunch":
+        if os.path.exists(f"{config.PATH_ROOT}{os.sep}pyLaunch"):
+            config.PATH_ROOT = f"{config.PATH_ROOT}{os.sep}pyLaunch"
+            os.chdir(config.PATH_ROOT)
+        else:
+            print("Unable to locate pyLaunch directory.")
+            input("Press enter to exit...")
+            sys.exit(0)
+
     if not os.path.exists("logs"):
         os.mkdir("logs")
+    log.debug(f"{config.PATH_ROOT = }")
     log.debug(f"Launching with {platform.platform()} on {platform.machine()}")
     if sys.version is not None:
         log.debug(f"Using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    config.PATH_USERCONFIG = config.PATH_ROOT
+    with open("confpath.txt", "w", encoding="utf-8") as f:
+        f.write(config.FILE_USERCONFIG + "\n")
 
     if args.Update:
         log.info(f"Checking for update")
@@ -122,13 +138,6 @@ def main():
     if args.Reset:
         Reset()
 
-    # Setup paths
-    config.PATH_ROOT = os.path.abspath(".")
-    log.debug(f"Using PATH_ROOT: {config.PATH_ROOT}")
-    config.PATH_USERCONFIG = config.PATH_ROOT
-    with open("confpath.txt", "w", encoding="utf-8") as f:
-        f.write(config.FILE_USERCONFIG + "\n")
-
     # Theme
     s.Set(args.Theme)
 
@@ -143,7 +152,7 @@ def main():
         NewConfiguration(cfgr, args)
     
     cfgr.Load()
-    if cfgr.Configuration.data['Version'] == config.VERSION_CONFIGURATION:
+    if cfgr.Configuration.data['Version'] == config.VERSION_CONFIGURATION or args.Skip:
         log.debug(f"Found current configuration [{config.VERSION_CONFIGURATION}]")
         LaunchConfiguration(cfgr, args) # Configuration is up to date, good-to-go
     else:

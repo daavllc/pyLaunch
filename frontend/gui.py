@@ -9,8 +9,8 @@ import helpers.config as config
 from helpers.style import Style
 import helpers.gui as gh
 
-from frontend.update import Update
-from frontend.launch import Launch
+from frontend.update import Updater
+from frontend.launch import Launcher
 from frontend.setup import Setup
 
 s = Style.Get()
@@ -51,7 +51,7 @@ class GUI:
         self.Runtime()
         if self.Status[0] and self.Status[1] and self.Status[2]:
             print("Launching!")
-            self.Launch.pyLaunch()
+            self.Launch.Launch()
         else:
             print("Unable to launch [", end="")
             print("Update: ", end="")
@@ -97,12 +97,13 @@ class GUI:
     ### Update
     def InitUpdate(self) -> bool:
         self.ws.title(f"pyLaunch - Update")
-        self.Update = Update()
+        self.Update = Updater()
         self.Frames.Update = tk.Frame(self.Frames.Body, background=s.FRAME_BG)
         self.Frames.Update.pack(fill='both', side='top', expand='True')
 
-        if not self.Update._CheckConnection():
-            self.StatusLabel.config(text="Unable to connect to the internet")
+        status = self.Update.CheckConnection()
+        if type(status) == str:
+            self.StatusLabel.config(text=status)
             self.Frames.Update.destroy()
             self.Status[0] = True
             return
@@ -144,12 +145,12 @@ class GUI:
         self.Frames.Update_Available.destroy()
 
         self.StatusLabel.config(text="Downloading update...")
-        if not self.Update._DownloadUpdate():
+        if not self.Update.DownloadUpdate():
             self.StatusLabel.config(text="Failed to download update")
         else:
             self.StatusLabel.config(text="Download complete! Installing...")
 
-        if not self.Update._InstallUpdate():
+        if not self.Update.InstallUpdate():
             self.StatusLabel.config(text="Failed to install update")
         else:
             self.StatusLabel.config(text="Update installed!")
@@ -167,7 +168,7 @@ class GUI:
     ### Launch
     def InitLaunch(self):
         self.ws.title(f"pyLaunch - Launch")
-        self.Launch = Launch()
+        self.Launch = Launcher()
         self.Frames.Launch = tk.Frame(self.Frames.Body, background=s.FRAME_BG)
         self.Frames.Launch.pack(fill='both', side='top', expand='True')
         if not self.Launch.Initialize():

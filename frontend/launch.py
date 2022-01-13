@@ -5,14 +5,27 @@ import subprocess
 import json
 
 import helpers.config as config
+from helpers.logger import Logger
 
 from frontend.setup import Setup
 
-class Launch:
-    def __init__(self):
-        self.PyPath = None
+class Launcher:
+    __instance = None
 
-    def Automatic(self):
+    @staticmethod
+    def Get():
+        if Launcher.__instance is None:
+            return Launcher()
+        return Launcher.__instance
+
+    def __init__(self):
+        if Launcher.__instance is not None:
+            return
+        else:
+            self.log = Logger("pyLaunch.Frontend.Launcher", "frontend.log")
+            self.PyPath = None
+
+    def Example(self):
         self.PyPath = GetPython()
         if self.PyPath is None:
             print(f"Uh oh, we couldn't find the required python version...")
@@ -25,7 +38,7 @@ class Launch:
 
         # Run setup script and install required packages
         Setup(self.PyPath)
-        self.pyLaunch()
+        self.Launch()
 
     def Initialize(self) -> bool:
         self.PyPath = GetPython()
@@ -33,7 +46,7 @@ class Launch:
             return False
         return True
 
-    def pyLaunch(self):
+    def Launch(self):
         ReturnValue = None
         UserCodes = []
         UserArgs = []
@@ -51,6 +64,10 @@ class Launch:
                 return 0
             except subprocess.CalledProcessError as e:
                 return e.returncode
+
+        if config.USER_CONFIGURATION['Launch']['SkipCheck']:
+            call(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']}")
+            sys.exit(0)
 
         while True:
             if ReturnValue is None:

@@ -4,6 +4,6 @@
 
 :start
 cls
-python start.py -l debug
+python start.py -l debug -m
 PAUSE
 goto :start

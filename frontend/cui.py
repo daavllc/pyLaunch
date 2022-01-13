@@ -2,8 +2,8 @@ import webbrowser
 
 import helpers.config as config
 
-from frontend.update import Update
-from frontend.launch import Launch
+from frontend.update import Updater
+from frontend.launch import Launcher
 from frontend.setup import Setup
 
 class CUI:
@@ -19,7 +19,7 @@ class CUI:
                 self.InitSetup()
         if self.Status[0] and self.Status[1] and self.Status[2]:
             print("Launching!")
-            self.Launch.pyLaunch()
+            self.Launch.Launch()
         else:
             print("Unable to launch [", end="")
             print("Update: ", end="")
@@ -42,9 +42,10 @@ class CUI:
         return
 
     def InitUpdate(self):
-        self.Update = Update()
-        if not self.Update._CheckConnection():
-            print("Unable to connect to the internet")
+        self.Update = Updater()
+        status = self.Update.CheckConnection()
+        if type(status) == str:
+            print(status)
             self.Status[0] = True
             return True
         print("Checking for update...")
@@ -69,14 +70,14 @@ class CUI:
             return True
 
     def InstallUpdate(self):
-        if not self.Update._DownloadUpdate():
+        if not self.Update.DownloadUpdate():
             print("Failed to download update")
             self.Status[0] = True
             return True
         else:
             print("Downloaded")
         
-        if not self.Update._InstallUpdate():
+        if not self.Update.InstallUpdate():
             print("Failed to install update")
             self.Status[0] = False
             return False
@@ -84,7 +85,7 @@ class CUI:
         return True
 
     def InitLaunch(self):
-        self.Launch = Launch()
+        self.Launch = Launcher()
         if not self.Launch.Initialize():
             print(f"Unable to locate Python {config.USER_CONFIGURATION['Setup']['PythonVersion']}")
             print(f"Please install Python {config.USER_CONFIGURATION['Setup']['PythonVersion']} and try again")

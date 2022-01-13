@@ -67,11 +67,12 @@ class GUI:
         self.Menus.Help.add_command(label="What's this?", command=self.PopupStartup)
         self.Menus.Help.add_separator()
         self.Menus.Help.add_command(label="About", command=self.PopupAbout)
+        self.Menus.Help.add_command(label="Documentation", command=lambda: webbrowser.open("https://docs.daav.us/pyLaunch"))
         self.Menus.Help.add_separator()
         self.Menus.Help.add_command(label="Configuration", command=self.PopupConfiguration)
+        self.Menus.Help.add_command(label="Updater", command=self.PopupUpdater)
         self.Menus.Help.add_command(label="Setup", command=self.PopupSetup)
-        self.Menus.Help.add_command(label="Update", command=self.PopupUpdate)
-        self.Menus.Help.add_command(label="Launch", command=self.PopupLaunch)
+        self.Menus.Help.add_command(label="Launcher", command=self.PopupLauncher)
 
         ######## Frames
         # Configuration
@@ -87,14 +88,16 @@ class GUI:
         self.Frames.Configuration_Body = tk.Frame(self.Frames.Configuration, background=s.FRAME_BG)
         self.Frames.Configuration_Body.pack_propagate(0)
         self.Frames.Configuration_Body.pack(fill='both', side='top', expand='False')
-        gh.Button(self.Frames.Configuration_Body, text="Setup", command=self.ConfigureSetup, width=8, bg=0).grid(column=0, row=1, padx=5, pady=5)
 
-        self.fr_cft_setup_status = gh.Label(self.Frames.Configuration_Body, text="Incomplete", font=s.FONT_TEXT_SMALL, bg=0)
-        self.fr_cft_setup_status.grid(column=1, row=1)
-        gh.Button(self.Frames.Configuration_Body, text="Update", command=self.ConfigureUpdate, width=8, bg=0).grid(column=0, row=2, padx=5, pady=5)
+        gh.Button(self.Frames.Configuration_Body, text="Updater", command=self.ConfigureUpdater, width=8, bg=0).grid(column=0, row=1, padx=5, pady=5)
         self.fr_cft_update_status = gh.SmallLabel(self.Frames.Configuration_Body, text="Incomplete", bg=0)
-        self.fr_cft_update_status.grid(column=1, row=2)
-        gh.Button(self.Frames.Configuration_Body, text="Launch", command=self.ConfigureLaunch, width=8, bg=0).grid(column=0, row=3, padx=5, pady=5)
+        self.fr_cft_update_status.grid(column=1, row=1)
+
+        gh.Button(self.Frames.Configuration_Body, text="Setup", command=self.ConfigureSetup, width=8, bg=0).grid(column=0, row=2, padx=5, pady=5)
+        self.fr_cft_setup_status = gh.Label(self.Frames.Configuration_Body, text="Incomplete", font=s.FONT_TEXT_SMALL, bg=0)
+        self.fr_cft_setup_status.grid(column=1, row=2)
+
+        gh.Button(self.Frames.Configuration_Body, text="Launcher", command=self.ConfigureLauncher, width=8, bg=0).grid(column=0, row=3, padx=5, pady=5)
         self.fr_cft_launch_status = gh.SmallLabel(self.Frames.Configuration_Body, text="Incomplete", bg=0)
         self.fr_cft_launch_status.grid(column=1, row=3)
 
@@ -115,8 +118,8 @@ class GUI:
         self.Frames.CGR.pack(fill='both', side='bottom', expand='False')
 
     def PopupStartup(self):
-        popup = tk.Toplevel(self.ws, background=s.FRAME_BG_ALT)
-        popup.geometry("350x250")
+        popup = tk.Toplevel(self.ws, borderwidth=10, background=s.FRAME_BG_ALT)
+        popup.geometry("350x270")
         popup.title("No valid configuration")
         popup.resizable(width=False, height=False)
         popup.iconbitmap(self.Icon)
@@ -127,16 +130,17 @@ class GUI:
         gh.LargeLabel(popup, text="Developers:", justify='left', bg=1).pack(anchor='w', padx=5, pady=5)
         gh.Label(popup, text="Please set up each configuration on the left", bg=1).pack(anchor='w', padx=s.PAD_BODY)
         gh.Label(popup, text="then press finish to save it.", bg=1).pack(anchor='w', padx=s.PAD_BODY)
-        gh.Label(popup, text="If you need any assistance, check the 'help' menu for\ninformation or check our GitHub page").pack()
+        gh.Label(popup, text="If you need any assistance, please check our docs page,\nthe 'help' menu or check our GitHub page").pack()
 
         Startup_Buttons = tk.Frame(popup, background=s.FRAME_BG_ALT)
         Startup_Buttons.pack(pady=5)
-        gh.Button(Startup_Buttons, text="GitHub Page", command=lambda: webbrowser.open("https://github.com/daavofficial/pyLaunch"), justify='left', bg=1).grid(column=0, row=0, padx=30)
-        gh.Button(Startup_Buttons, text="Close", command=popup.destroy, bg=1).grid(column=1, row=0)
+        gh.Button(Startup_Buttons, text="GitHub Page", command=lambda: webbrowser.open("https://github.com/daavofficial/pyLaunch"), bg=1).grid(column=0, row=0, padx=20)
+        gh.Button(Startup_Buttons, text="Docs", command=lambda: webbrowser.open("https://docs.daav.us/pyLaunch"), width=6, bg=1).grid(sticky='w', column=1, row=0)
+        gh.Button(Startup_Buttons, text="Close", command=popup.destroy, bg=1).grid(column=2, row=0, padx=20)
     
     def PopupAbout(self):
-        popup = tk.Toplevel(self.ws, background=s.FRAME_BG_ALT)
-        popup.geometry("350x200")
+        popup = tk.Toplevel(self.ws, borderwidth=10, background=s.FRAME_BG_ALT)
+        popup.geometry("350x300")
         popup.title("About")
         popup.resizable(width=False, height=False)
         popup.iconbitmap(self.Icon)
@@ -146,23 +150,27 @@ class GUI:
         gh.Title(About_Title, text=f"pyLaunch {config.VERSION}", justify='left', bg=1).grid(sticky='s', column=0, row=0)
         gh.SmallLabel(About_Title, text=f"©2022 DAAV, LLC", justify='left', bg=1).grid(sticky='s', column=1, row=0)
 
-        gh.Label(popup, text=f"Python project setup, updater, and pyLaunch", bg=1).pack(anchor='w', padx=s.PAD_BODY)
+        gh.Label(popup, text=f"Python project setup, updater, and launcher", bg=1).pack(anchor='w', padx=s.PAD_BODY)
 
-        About_Source = tk.Frame(popup, background=s.FRAME_BG_ALT)
+        About_Source = tk.Frame(popup, borderwidth=10, background=s.FRAME_BG_ALT)
         About_Source.pack(anchor='w')
         gh.Label(About_Source, text=f"License: MIT", justify='left', bg=1).grid(sticky='w', column=0, row=0)
         gh.Button(About_Source, text="Source Code", command=lambda: webbrowser.open("https://github.com/daavofficial/pyLaunch"), bg=1).grid(sticky='w', column=1, row=0, padx=10)
+        gh.Label(About_Source, text=f"Documentation: ", justify='left', bg=1).grid(sticky='w', column=0, row=1)
+        gh.Button(About_Source, text="docs.daav.us", command=lambda: webbrowser.open("https://docs.daav.us/pyLaunch"), bg=1).grid(sticky='w', column=1, row=1, padx=10)
 
         gh.FillHorizontalSeparator(popup, pady=5)
 
-        gh.Label(popup, text=f"GUI v{config.VERSION_GUI}", bg=1).pack(anchor='w', padx=5)
-        gh.Label(popup, text=f"Project Launch v{config.VERSION_PROJECT_LAUNCH}", bg=1).pack(anchor='w', padx=5)
-        gh.Label(popup, text=f"Project Setup v{config.VERSION_PROJECT_SETUP}", bg=1).pack(anchor='w', padx=5)
-        gh.Label(popup, text=f"Project Update v{config.VERSION_PROJECT_UPDATE}", bg=1).pack(anchor='w', padx=5)
+        gh.Label(popup, text=f"GUI v{config.VERSION_CONFIGURATOR_GUI}", bg=1).pack(anchor='w', padx=5)
+        gh.Label(popup, text=f"Configurator v{config.VERSION_CONFIGURATOR}", bg=1).pack(anchor='w', padx=5)
+        gh.Label(popup, text=f"Configuration v{config.VERSION_CONFIGURATOR}", bg=1).pack(anchor='w', padx=5)
+        gh.Label(popup, text=f"Updater v{config.VERSION_UPDATE}", bg=1).pack(anchor='w', padx=5)
+        gh.Label(popup, text=f"Setup v{config.VERSION_SETUP}", bg=1).pack(anchor='w', padx=5)
+        gh.Label(popup, text=f"Launcher v{config.VERSION_LAUNCH}", bg=1).pack(anchor='w', padx=5)
 
     def PopupConfiguration(self):
-        popup = tk.Toplevel(self.ws, background=s.FRAME_BG_ALT)
-        popup.geometry("350x150")
+        popup = tk.Toplevel(self.ws, borderwidth=10, background=s.FRAME_BG_ALT)
+        popup.geometry("350x200")
         popup.title("Help - Configuration")
         popup.resizable(width=False, height=False)
         popup.iconbitmap(self.Icon)
@@ -170,44 +178,26 @@ class GUI:
         gh.LargeLabel(popup, text="Configuration is broken into 3 parts:", bg=1).pack(pady=5)
         Config_Details = tk.Frame(popup, background=s.FRAME_BG_ALT)
         Config_Details.pack(pady=5)
-        gh.Button(Config_Details, text="Setup", command=self.PopupSetup, width=6, bg=1).grid(sticky='w', column=0, row=0)
-        gh.Label(Config_Details, text="Required python version, required packages", bg=1).grid(sticky='w', column=1, row=0, pady=5)
 
-        gh.Button(Config_Details, text="Update", command=self.PopupUpdate, width=6, bg=1).grid(sticky='w', column=0, row=1)
-        gh.Label(Config_Details, text="GitHub details for update checking/downloading", bg=1).grid(sticky='w', column=1, row=1, pady=5)
+        gh.Button(Config_Details, text="Updater", command=self.PopupUpdater, width=8, bg=1).grid(sticky='w', column=0, row=0)
+        gh.Label(Config_Details, text="GitHub details for update checking/downloading", bg=1).grid(sticky='w', column=1, row=0, pady=5)
 
-        gh.Button(Config_Details, text="Launch", command=self.PopupLaunch, width=6, bg=1).grid(sticky='w', column=0, row=2)
-        gh.Label(Config_Details, text="Error catching, and python reloading", bg=1).grid(sticky='w', column=1, row=2, pady=5)
+        gh.Button(Config_Details, text="Setup", command=self.PopupSetup, width=8, bg=1).grid(sticky='w', column=0, row=1)
+        gh.Label(Config_Details, text="Dependancy installation", bg=1).grid(sticky='w', column=1, row=1, pady=5)
 
-    def PopupSetup(self):
-        popup = tk.Toplevel(self.ws, background=s.FRAME_BG_ALT)
-        popup.geometry("400x300")
-        popup.title("Help - Setup")
-        popup.resizable(width=False, height=False)
-        popup.iconbitmap(self.Icon)
+        gh.Button(Config_Details, text="Launcher", command=self.PopupLauncher, width=8, bg=1).grid(sticky='w', column=0, row=2)
+        gh.Label(Config_Details, text="Error catching, and Python reloading", bg=1).grid(sticky='w', column=1, row=2, pady=5)
 
-        gh.Label(popup, text="Setup simplifies installation by running python", bg=1).pack()
-        gh.Label(popup, text="using your project's required version,", bg=1).pack()
-        gh.Label(popup, text="and installing required packages automatically", bg=1).pack()
+        Configuration_Buttons = tk.Frame(popup, background=s.FRAME_BG_ALT)
+        Configuration_Buttons.pack(pady=5)
 
-        gh.FillHorizontalSeparator(popup, pady=5)
+        gh.Label(Configuration_Buttons, text="More documentation is available at", bg=1).grid(sticky='w', column=0, row=0, pady=5)
+        gh.Button(Configuration_Buttons, text="docs.daav.us", command=lambda: webbrowser.open("https://docs.daav.us/pyLaunch"), bg=1).grid(sticky='w', column=1, row=0)
 
-        gh.LargeLabel(popup, text="Setup requires two things:", bg=1).pack(anchor='w', padx=s.PAD_HEADERX)
-        gh.Label(popup, text="The version of python your project uses", bg=1).pack(anchor='w', padx=s.PAD_BODY)
-        gh.Label(popup, text="The packages your project depends on", bg=1).pack(anchor='w', padx=s.PAD_BODY)
-
-        gh.LargeLabel(popup, text="Python Version", bg=1).pack(anchor='w', padx=s.PAD_HEADERX)
-        gh.Label(popup, text="Provide the required python version (ex: 3.10)", bg=1).pack(anchor='w', padx=s.PAD_BODY)
-
-        gh.LargeLabel(popup, text="Required packages:", bg=1).pack(anchor='w', padx=s.PAD_HEADERX)
-        gh.Label(popup, text="Provide the pip install name, and the import name", bg=1).pack(anchor='w', padx=s.PAD_BODY)
-        gh.Label(popup, text="If they are the same, just type the package name (ex: numpy)", bg=1).pack(anchor='w', padx=s.PAD_BODY)
-        gh.Label(popup, text="If they are different, delimit them with a colon (ex: pyyaml:yaml)", bg=1).pack(anchor='w', padx=s.PAD_BODY)
-
-    def PopupUpdate(self):
-        popup = tk.Toplevel(self.ws, background=s.FRAME_BG_ALT)
-        popup.geometry("400x335")
-        popup.title("Help - Update")
+    def PopupUpdater(self):
+        popup = tk.Toplevel(self.ws, borderwidth=10, background=s.FRAME_BG_ALT)
+        popup.geometry("400x355")
+        popup.title("Help - Updater")
         popup.resizable(width=False, height=False)
         popup.iconbitmap(self.Icon)
 
@@ -234,10 +224,35 @@ class GUI:
         gh.LargeLabel(popup, text="Token:", bg=1).pack(anchor='w', padx=s.PAD_HEADERX)
         gh.Label(popup, text="Only needed for accessing private repositores", bg=1).pack(anchor='w', padx=s.PAD_BODY)
 
-    def PopupLaunch(self):
-        popup = tk.Toplevel(self.ws, background=s.FRAME_BG_ALT)
-        popup.geometry("400x250")
-        popup.title("Help - Launch")
+    def PopupSetup(self):
+        popup = tk.Toplevel(self.ws, borderwidth=10, background=s.FRAME_BG_ALT)
+        popup.geometry("420x320")
+        popup.title("Help - Setup")
+        popup.resizable(width=False, height=False)
+        popup.iconbitmap(self.Icon)
+
+        gh.Label(popup, text="Setup simplifies installation by running python", bg=1).pack()
+        gh.Label(popup, text="using your project's required version,", bg=1).pack()
+        gh.Label(popup, text="and installing required packages automatically", bg=1).pack()
+
+        gh.FillHorizontalSeparator(popup, pady=5)
+
+        gh.LargeLabel(popup, text="Setup requires two things:", bg=1).pack(anchor='w', padx=s.PAD_HEADERX)
+        gh.Label(popup, text="The version of python your project uses", bg=1).pack(anchor='w', padx=s.PAD_BODY)
+        gh.Label(popup, text="The packages your project depends on", bg=1).pack(anchor='w', padx=s.PAD_BODY)
+
+        gh.LargeLabel(popup, text="Python Version", bg=1).pack(anchor='w', padx=s.PAD_HEADERX)
+        gh.Label(popup, text="Provide the required python version (ex: 3.10)", bg=1).pack(anchor='w', padx=s.PAD_BODY)
+
+        gh.LargeLabel(popup, text="Required packages:", bg=1).pack(anchor='w', padx=s.PAD_HEADERX)
+        gh.Label(popup, text="Provide the pip install name, and the import name", bg=1).pack(anchor='w', padx=s.PAD_BODY)
+        gh.Label(popup, text="If they are the same, just type the package name (ex: numpy)", bg=1).pack(anchor='w', padx=s.PAD_BODY)
+        gh.Label(popup, text="If they are different, delimit them with a colon (ex: pyyaml:yaml)", bg=1).pack(anchor='w', padx=s.PAD_BODY)
+
+    def PopupLauncher(self):
+        popup = tk.Toplevel(self.ws, borderwidth=10, background=s.FRAME_BG_ALT)
+        popup.geometry("420x270")
+        popup.title("Help - Launcher")
         popup.resizable(width=False, height=False)
         popup.iconbitmap(self.Icon)
 
@@ -292,6 +307,67 @@ class GUI:
         if self.fr_cfr_popup_btn is not None:
             self.fr_cfr_popup_btn.destroy()
             self.fr_cfr_popup_btn = None
+
+##########################################################################################
+#
+#                                UPDATER
+#
+##########################################################################################
+    def ConfigureUpdater(self):
+        self.ClearConfigure()
+        self.Configuring = True
+        self.fr_cfr_title.config(text="Updater Configuration")
+
+        self.data.Update = {'SkipCheck' : tk.BooleanVar()}
+
+        gh.Checkbutton(self.Frames.CGR, text="Skip update checking", variable=self.data.Update['SkipCheck'], command=self.SkipUpdate).grid(sticky='w', column=0, row=0)
+
+        row = 1
+        for text in ['Organization', 'Repository', 'Branch', 'Version Path', 'Find', 'Token']:
+            gh.Label(self.Frames.CGR, justify="left", text=text + ":", bg=0).grid(sticky='w', column=0, row=row)
+            self.data.Update[text.replace(" ", "")] = gh.Text(self.Frames.CGR, width=40, height=1)
+            self.data.Update[text.replace(" ", "")].grid(sticky='w', column=1, row=row, pady=5)
+            row += 1
+
+        self.Frames.CGR_UpdateButtons = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
+        self.Frames.CGR_UpdateButtons.grid(sticky='w', column=0, row=row, pady=5)
+        self.StatusLabel = gh.LargeLabel(self.Frames.CGR_UpdateButtons, text="", bg=0)
+        self.StatusLabel.grid(sticky='s')
+        gh.Button(self.Frames.CGR_UpdateButtons, text="Finish", command=self.SetUpdate, bg=1).grid(sticky='s', pady=20)
+
+    def SkipUpdate(self):
+        self.Configurator.Update.SetSkipCheck(self.data.Update['SkipCheck'].get())
+
+    def SetUpdate(self):
+        self.StatusLabel.config(text="Verifiying information with GitHub...")
+
+        Organization = self.data.Update['Organization'].get("1.0", "end-1c")
+        Repository = self.data.Update['Repository'].get("1.0", "end-1c")
+        Branch = self.data.Update['Branch'].get("1.0", "end-1c")
+        VersionPath = self.data.Update['VersionPath'].get("1.0", "end-1c")
+        Find = self.data.Update['Find'].get("1.0", "end-1c")
+        Token = self.data.Update['Token'].get("1.0", "end-1c")
+
+        if not type(self.data.Update['SkipCheck']) == bool:
+            self.data.Update['SkipCheck'] = False
+
+        status = self.Configurator.Update.Set(Organization, Repository, Branch, VersionPath, Find, Token, self.data.Update['SkipCheck'])
+        if not type(status) == list:
+            self.StatusLabel.config(text="Unable to connect to the internet, config saved.")
+            self.ConfigStatus[1] = True
+            self.UpdateStatus()
+        elif all(element == None for element in status):
+            self.ConfigStatus[1] = True
+            self.UpdateStatus()
+            self.StatusLabel.config(text="Done!")
+            self.ClearConfigure()
+            self.log.info(f"Stored Update: {self.Configurator.Configuration.data['Update']}")
+        else:
+            for stat in status:
+                if stat is not None:
+                    self.StatusLabel.config(text=stat)
+                    break
+            self.log.info(f"Update configuration issues: {str(status)}")
 
 ##########################################################################################
 #
@@ -393,75 +469,14 @@ class GUI:
 
 ##########################################################################################
 #
-#                                UPDATE
-#
-##########################################################################################
-    def ConfigureUpdate(self):
-        self.ClearConfigure()
-        self.Configuring = True
-        self.fr_cfr_title.config(text="Update Configuration")
-
-        self.data.Update = {'SkipCheck' : tk.BooleanVar()}
-
-        gh.Checkbutton(self.Frames.CGR, text="Skip update checking", variable=self.data.Update['SkipCheck'], command=self.SkipUpdate).grid(sticky='w', column=0, row=0)
-
-        row = 1
-        for text in ['Organization', 'Repository', 'Branch', 'Version Path', 'Find', 'Token']:
-            gh.Label(self.Frames.CGR, justify="left", text=text + ":", bg=0).grid(sticky='w', column=0, row=row)
-            self.data.Update[text.replace(" ", "")] = gh.Text(self.Frames.CGR, width=40, height=1)
-            self.data.Update[text.replace(" ", "")].grid(sticky='w', column=1, row=row, pady=5)
-            row += 1
-
-        self.Frames.CGR_UpdateButtons = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
-        self.Frames.CGR_UpdateButtons.grid(sticky='w', column=0, row=row, pady=5)
-        self.StatusLabel = gh.LargeLabel(self.Frames.CGR_UpdateButtons, text="", bg=0)
-        self.StatusLabel.grid(sticky='s')
-        gh.Button(self.Frames.CGR_UpdateButtons, text="Finish", command=self.SetUpdate, bg=1).grid(sticky='s', pady=20)
-
-    def SkipUpdate(self):
-        self.Configurator.Update.SetSkipCheck(self.data.Update['SkipCheck'].get())
-
-    def SetUpdate(self):
-        self.StatusLabel.config(text="Verifiying information with GitHub...")
-
-        Organization = self.data.Update['Organization'].get("1.0", "end-1c")
-        Repository = self.data.Update['Repository'].get("1.0", "end-1c")
-        Branch = self.data.Update['Branch'].get("1.0", "end-1c")
-        VersionPath = self.data.Update['VersionPath'].get("1.0", "end-1c")
-        Find = self.data.Update['Find'].get("1.0", "end-1c")
-        Token = self.data.Update['Token'].get("1.0", "end-1c")
-
-        if not type(self.data.Update['SkipCheck']) == bool:
-            self.data.Update['SkipCheck'] = False
-
-        status = self.Configurator.Update.Set(Organization, Repository, Branch, VersionPath, Find, Token, self.data.Update['SkipCheck'])
-        if not type(status) == list:
-            self.StatusLabel.config(text="Unable to connect to the internet, config saved.")
-            self.ConfigStatus[1] = True
-            self.UpdateStatus()
-        elif all(element == None for element in status):
-            self.ConfigStatus[1] = True
-            self.UpdateStatus()
-            self.StatusLabel.config(text="Done!")
-            self.ClearConfigure()
-            self.log.info(f"Stored Update: {self.Configurator.Configuration.data['Update']}")
-        else:
-            for stat in status:
-                if stat is not None:
-                    self.StatusLabel.config(text=stat)
-                    break
-            self.log.info(f"Update configuration issues: {str(status)}")
-
-##########################################################################################
-#
 #                                LAUNCH
 #
 ##########################################################################################
-    def ConfigureLaunch(self):
+    def ConfigureLauncher(self):
         self.ClearConfigure()
         self.Configuring = True
 
-        self.fr_cfr_title.config(text="Launch Configuration")
+        self.fr_cfr_title.config(text="Launcher Configuration")
 
         self.data.codes = {}
         self.data.tk_items = []

@@ -13,7 +13,7 @@ class CUI:
 
     def _Configure(self):
         print("-------------------------")
-        print("This program is broken into three categories, setup, update, and launch.")
+        print("Configuration is broken into three parts: updater, setup, and launcher.")
         print("Setup:")
         print("\tRequired python version, required packages")
         print("Update:")
@@ -21,13 +21,47 @@ class CUI:
         print("Launch")
         print("\tProvides error catching, and python reloading")
         print("Additional documentation can be found at https://docs.daav.us/pyLaunch")
-        input("Press enter to begin configuring pyLaunch:Setup")
-        self._ConfigureSetup()
+        input("Press enter to begin configuring pyLaunch:Updater")
         self._ConfigureUpdate()
+        self._ConfigureSetup()
         self._ConfigureLaunch()
         print("It looks like you're finished!")
         print("Lets save and reload just to be sure it works.")
         self.Configurator.Save()
+
+    def _ConfigureUpdate(self):
+        print("\npyLaunch:Updater")
+        print("------------------")
+        while True:
+            print("Enter your GitHub organization/username (ex: daavofficial)")
+            Organization = input(" > ")
+            print("Enter your github repository (ex: pyLaunch)")
+            Repository = input(" > ")
+            print("Enter your github branch (ex: main)")
+            Branch = input(" > ")
+            print("Enter your project version path (ex: /src/config/config.py)")
+            VersionPath = input(" > ")
+            print("Enter the string to locate the version (ex: VERSION = )")
+            Find = input(" > ")
+            print("Enter your GitHub token (only for private repositories) or press enter")
+            Token = input(" > ")
+            print("Skip checking for updates (press enter for no)")
+            SkipCheck = input(" > ").lower()
+            if SkipCheck:
+                SkipCheck = True
+            else:
+                SkipCheck = False
+            if 'n' in input("Are these all correct? (Y/n) > "):
+                continue
+            status = self.Configurator.Update.Set(Organization, Repository, Branch, VersionPath, Find, Token, SkipCheck)
+            if all(element == None for element in status):
+                print("Set successfully!")
+                break
+            else:
+                for stat in status:
+                    if stat is not None:
+                        print(stat)
+        return True
 
     def _ConfigureSetup(self):
         data = self.Storage()
@@ -106,42 +140,8 @@ class CUI:
                     break
             return True
 
-    def _ConfigureUpdate(self):
-        print("\npyLaunch:Update")
-        print("------------------")
-        while True:
-            print("Enter your GitHub organization/username (ex: daavofficial)")
-            Organization = input(" > ")
-            print("Enter your github repository (ex: pyLaunch)")
-            Repository = input(" > ")
-            print("Enter your github branch (ex: main)")
-            Branch = input(" > ")
-            print("Enter your project version path (ex: /src/config/config.py)")
-            VersionPath = input(" > ")
-            print("Enter the string to locate the version (ex: VERSION = )")
-            Find = input(" > ")
-            print("Enter your GitHub token (only for private repositories) or press enter")
-            Token = input(" > ")
-            print("Skip checking for updates (press enter for no)")
-            SkipCheck = input(" > ").lower()
-            if SkipCheck:
-                SkipCheck = True
-            else:
-                SkipCheck = False
-            if 'n' in input("Are these all correct? (Y/n) > "):
-                continue
-            status = self.Configurator.Update.Set(Organization, Repository, Branch, VersionPath, Find, Token, SkipCheck)
-            if all(element == None for element in status):
-                print("Set successfully!")
-                break
-            else:
-                for stat in status:
-                    if stat is not None:
-                        print(stat)
-        return True
-
     def _ConfigureLaunch(self):
-        print("\npyLaunch:Launch")
+        print("\npyLaunch:Launcher")
         print("------------------")
         data = self.Storage()
         while True:
@@ -155,7 +155,7 @@ class CUI:
                 data.SkipCheck = True
             else:
                 data.SkipCheck = False
-            print("Launch uses exit codes to preform specific functions, or provide error information")
+            print("Launcher uses exit codes to preform specific functions, or provide error information")
             print("For the best results, use small negative numbers")
             data.codes = {}
             done = False

@@ -2,4 +2,4 @@
 :: Windows launch example
 :: This should be moved to the root of your project, and the path should be updated below
 
-python start.py -UI CUI -LUI CUI
+python start.py -UI CUI -CI CUI

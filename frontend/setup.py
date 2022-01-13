@@ -1,14 +1,28 @@
-import sys
 import subprocess
 import importlib.util
 
 import helpers.config as config
+from helpers.logger import Logger
 
 class Setup:
-    def __init__(self, PyPath: str):
-        self.PyPath = PyPath
-        self.Required = []
-        self.CheckedPip = False
+    __instance = None
+
+    @staticmethod
+    def Get(pyPath: str = None):
+        if Setup.__instance is None:
+            return Setup(pyPath)
+        return Setup.__instance
+
+    def __init__(self, pyPath: str):
+        if Setup.__instance is not None:
+            return
+        else:
+            if pyPath is None:
+                raise Exception("pyPath is required for initializing Setup")
+            self.log = Logger("pyLaunch.Frontend.Setup", "frontend.log")
+            self.PyPath = pyPath
+            self.Required = []
+            self.CheckedPip = False
 
     def Automatic(self):
         for pypi, imp in config.USER_CONFIGURATION['Setup']['Packages'].items():
