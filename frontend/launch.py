@@ -51,26 +51,31 @@ class Launcher:
         UserCodes = []
         UserArgs = []
         for key, value in config.USER_CONFIGURATION['Launch']['ErrorCodes'].items():
-            try:
-                key = int(key) # If key is integer, it's a return code
-            except ValueError:
-                continue
+            UserCodes.append(int(key))
+            UserArgs.append(value)
     
-        def call(args):
+        def call(args: str = ""):
             try:
-                subprocess.check_call([f"{self.PyPath}", args])
+                if args == "":
+                    subprocess.check_call([f"{self.PyPath}", f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']}"])
+                else:
+                    command = [f"{self.PyPath}", f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']}"]
+                    args = args.split(" ")
+                    for arg in args:
+                        command.append(arg)
+                    subprocess.check_call(command)
                 return 0
             except subprocess.CalledProcessError as e:
                 return e.returncode
 
         if config.USER_CONFIGURATION['Launch']['SkipCheck']:
-            call(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']}")
+            call()
             sys.exit(0)
 
         while True:
             if ReturnValue is None:
                 ClearScreen()
-                ReturnValue = call(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']}")
+                ReturnValue = call()
                 continue
             elif ReturnValue == 0: # Exit
                 sys.exit(0)
@@ -81,7 +86,7 @@ class Launcher:
                         code = 4294967296 + code # max value of 32-bit integer 4294967295
                     if ReturnValue == code:
                         ClearScreen()
-                        ReturnValue = call(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']} {arg}")
+                        ReturnValue = call(arg)
                         valid = True
                         break
                 if valid:
@@ -89,7 +94,7 @@ class Launcher:
             print("-----------------")
             print(f"It looks like something went wrong... Error: {ReturnValue}")
             print(f"Feel free to submit an issue at https://github.com/{config.USER_CONFIGURATION['Update']['Organization']}/{config.USER_CONFIGURATION['Update']['Repository']}/issues")
-            if 'n' in input("Reload? (Y/n)"):
+            if 'n' in input("Reload? (Y/n) > "):
                 sys.exit(0)
             ReturnValue = None
 
