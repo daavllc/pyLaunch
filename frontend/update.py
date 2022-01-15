@@ -40,7 +40,7 @@ class Updater:
         return False
 
     def CheckConnection(self) -> str:
-        if config.USER_CONFIGURATION['Update']['SkipCheck']:
+        if config.CONFIGURATION['Update']['SkipCheck']:
             return "Skipping update check"
         try:
             urllib.request.urlopen('http://google.com')
@@ -51,7 +51,7 @@ class Updater:
     def DownloadUpdate(self) -> bool:
         response = None
         try:
-            response = urllib.request.urlopen(f"https://api.github.com/repos/{config.USER_CONFIGURATION['Update']['Organization']}/{config.USER_CONFIGURATION['Update']['Repository']}/zipball/{config.USER_CONFIGURATION['Update']['Branch']}")
+            response = urllib.request.urlopen(f"https://api.github.com/repos/{config.CONFIGURATION['Update']['Organization']}/{config.CONFIGURATION['Update']['Repository']}/zipball/{config.CONFIGURATION['Update']['Branch']}")
         except urllib.error.HTTPError as e:
             print(f"Unable to download update from GitHub: {e}")
             input("Press enter to continue...")
@@ -93,17 +93,17 @@ class Updater:
 
     def InstallUpdate(self) -> bool:
         print("Installing new version")
-        for file in os.listdir(config.USER_CONFIGURATION['Launch']['ProjectRoot']):
-            if os.path.isdir(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}"):
+        for file in os.listdir(config.CONFIGURATION['Launch']['ProjectRoot']):
+            if os.path.isdir(f"{config.CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}"):
                 if file in self.DeleteFolders:
-                    shutil.rmtree(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}")
+                    shutil.rmtree(f"{config.CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}")
             else: # Files
-                os.remove(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}")
+                os.remove(f"{config.CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}")
 
         # Old version is deleted
 
         for file in os.listdir(f"{config.PATH_ROOT}{os.sep}{self.UpdateFolder}"):
-            os.rename(f"{config.PATH_ROOT}{os.sep}{self.UpdateFolder}{os.sep}{file}", f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}")
+            os.rename(f"{config.PATH_ROOT}{os.sep}{self.UpdateFolder}{os.sep}{file}", f"{config.CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{file}")
         shutil.rmtree(f"{config.PATH_ROOT}{os.sep}{self.UpdateFolder}")
         return True
 
@@ -130,20 +130,20 @@ class Updater:
     def _GetVersions(self) -> list:
         # Sucessful return: list[InstalledVersion: str, CheckedVersion: str]
         # Unsucessful: list[message: str, continue: bool]
-        if not os.path.exists(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{config.USER_CONFIGURATION['Update']['VersionPath']}"):
+        if not os.path.exists(f"{config.CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{config.CONFIGURATION['Update']['VersionPath']}"):
             # This means either the configuration is incorrect, or pyLaunch isn't where it should be
             # continue is False, because the project cannot be launched
-            return [f"Unable to locate installed version at {config.USER_CONFIGURATION['Update']['VersionPath']}", False]
+            return [f"Unable to locate installed version at {config.CONFIGURATION['Update']['VersionPath']}", False]
 
         InstalledVersion = None # Local Version
         CheckedVersion = None # Version on GitHub
 
-        with open(f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{config.USER_CONFIGURATION['Update']['VersionPath']}", "r") as f:
+        with open(f"{config.CONFIGURATION['Launch']['ProjectRoot']}{os.sep}{config.CONFIGURATION['Update']['VersionPath']}", "r") as f:
             lines = f.readlines()
             InstalledVersion = self._GetVersionFromStr(lines)
 
         try:
-            response = urllib.request.urlopen(f"https://raw.githubusercontent.com/{config.USER_CONFIGURATION['Update']['Organization']}/{config.USER_CONFIGURATION['Update']['Repository']}/{config.USER_CONFIGURATION['Update']['Branch']}{config.USER_CONFIGURATION['Update']['VersionPath']}")
+            response = urllib.request.urlopen(f"https://raw.githubusercontent.com/{config.CONFIGURATION['Update']['Organization']}/{config.CONFIGURATION['Update']['Repository']}/{config.CONFIGURATION['Update']['Branch']}{config.CONFIGURATION['Update']['VersionPath']}")
             content = response.read().decode("UTF-8").split("\n")
             CheckedVersion = self._GetVersionFromStr(content)
         except urllib.error.HTTPError as e:
@@ -160,8 +160,8 @@ class Updater:
         ver = None
         for line in lines:
             line = line.strip()
-            if config.USER_CONFIGURATION['Update']['Find'] in line:
-                ver = line[len(config.USER_CONFIGURATION['Update']['Find']):].strip('"')
+            if config.CONFIGURATION['Update']['Find'] in line:
+                ver = line[len(config.CONFIGURATION['Update']['Find']):].strip('"')
         match = re.match(r"\d+\.\d+\.\d+", ver) # > #.#.#
 
         if match:

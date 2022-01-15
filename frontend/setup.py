@@ -25,12 +25,12 @@ class Setup:
             self.CheckedPip = False
 
     def Automatic(self):
-        for pypi, imp in config.USER_CONFIGURATION['Setup']['Packages'].items():
+        for pypi, imp in config.CONFIGURATION['Setup']['Packages'].items():
             if not self.AutoValidatePackage(pypi, imp):
                 print(f"Unable to validate package '{pypi}'")
 
     def GetRequired(self) -> list:
-        for pypi, imp in config.USER_CONFIGURATION['Setup']['Packages'].items():
+        for pypi, imp in config.CONFIGURATION['Setup']['Packages'].items():
             if not self.ValidatePackage(pypi, imp):
                 self.Required.append([pypi, imp])
         return self.Required

@@ -2,7 +2,7 @@ import datetime as dt
 import tkinter as tk
 from tkinter import ttk
 import webbrowser
-import time
+import os
 
 import helpers.config as config
 from helpers.style import Style
@@ -27,7 +27,6 @@ class GUI:
         self.ws = tk.Tk()
 
         self.Completed = False
-        self.ConfigStatus = [False, False, False]
         self.Configuring = False
     
         self.data = self.Storage()
@@ -92,21 +91,33 @@ class GUI:
         self.Frames.Configuration_Body.pack_propagate(0)
         self.Frames.Configuration_Body.pack(fill='both', side='top', expand='False')
 
-        gh.Button(self.Frames.Configuration_Body, text="Updater", command=self.ConfigureUpdater, width=8, bg=0).grid(column=0, row=1, padx=5, pady=5)
-        self.fr_cft_update_status = gh.SmallLabel(self.Frames.Configuration_Body, text="Incomplete", bg=0)
-        self.fr_cft_update_status.grid(column=1, row=1)
+        self.ConfigurationStatus = dict(
+            Updater =dict(
+                Callback = self.ConfigureUpdater,
+                Complete = False,
+                Label = None
+            ),
+            Setup = dict(
+                Callback = self.ConfigureSetup,
+                Complete = False,
+                Label = None
+            ),
+            Launcher = dict(
+                Callback = self.ConfigureLauncher,
+                Complete = False,
+                Label = None
+            ),
+        )
+        row = 1
+        for key, value in self.ConfigurationStatus.items():
+            gh.Button(self.Frames.Configuration_Body, text=key, command=value['Callback'], width=8, bg=0).grid(column=0, row=row, padx=5, pady=5)
+            value['Label'] = gh.SmallLabel(self.Frames.Configuration_Body, text="Incomplete", bg=0)
+            value['Label'].grid(column=1, row=row)
+            row += 1
 
-        gh.Button(self.Frames.Configuration_Body, text="Setup", command=self.ConfigureSetup, width=8, bg=0).grid(column=0, row=2, padx=5, pady=5)
-        self.fr_cft_setup_status = gh.Label(self.Frames.Configuration_Body, text="Incomplete", font=s.FONT_TEXT_SMALL, bg=0)
-        self.fr_cft_setup_status.grid(column=1, row=2)
-
-        gh.Button(self.Frames.Configuration_Body, text="Launcher", command=self.ConfigureLauncher, width=8, bg=0).grid(column=0, row=3, padx=5, pady=5)
-        self.fr_cft_launch_status = gh.SmallLabel(self.Frames.Configuration_Body, text="Incomplete", bg=0)
-        self.fr_cft_launch_status.grid(column=1, row=3)
-
-        self.fr_cft_finish_label = gh.Label(self.Frames.Configuration_Body, text="", bg=0)
-        self.fr_cft_finish_label.grid(column=0, row=4)
-        gh.Button(self.Frames.Configuration_Body, text="Finish", command=self.FinishConfiguration, bg=0).grid(column=0, row=5)
+        self.ConfigurationComplete = gh.Label(self.Frames.Configuration_Body, text="", bg=0)
+        self.ConfigurationComplete.grid(column=0, row=row)
+        gh.Button(self.Frames.Configuration_Body, text="Finish", command=self.FinishConfiguration, bg=0).grid(column=0, row=row + 1)
 
         # Configurator
         self.Frames.Configurator = tk.Frame(self.ws, width=500, height=400, borderwidth=10, background=s.FRAME_BG_ALT)
@@ -320,28 +331,21 @@ class GUI:
         self.ws.mainloop()
 
     def FinishConfiguration(self):
-        if not(self.ConfigStatus[0] and self.ConfigStatus[1] and self.ConfigStatus[2]):
-            self.fr_cft_finish_label.config(text="Incomplete")
+        if not( all(complete == True for complete in [value['Complete'] for value in self.ConfigurationStatus.values()]) ):
+            self.ConfigurationComplete.config(text="Incomplete")
         else:
-            self.fr_cft_finish_label.config(text="Done!")
+            self.ConfigurationComplete.config(text="Done!")
             self.Configurator.Save()
             self.Completed = True
             self.ws.destroy()
             return True
 
     def UpdateStatus(self):
-        if self.ConfigStatus[0]:
-            self.fr_cft_setup_status.config(text="Done")
-        else:
-            self.fr_cft_setup_status.config(text="Not complete")
-        if self.ConfigStatus[1]:
-            self.fr_cft_update_status.config(text="Done")
-        else:
-            self.fr_cft_update_status.config(text="Not complete")
-        if self.ConfigStatus[2]:
-            self.fr_cft_launch_status.config(text="Done")
-        else:
-            self.fr_cft_launch_status.config(text="Not complete")
+        for key in self.ConfigurationStatus.keys():
+            if self.ConfigurationStatus[key]['Complete']:
+                self.ConfigurationStatus[key]['Label'].config(text="Done")
+            else:
+                self.ConfigurationStatus[key]['Label'].config(text="Incomplete")
 
     def ClearConfigure(self):
         self.data = self.Storage()
@@ -398,10 +402,10 @@ class GUI:
         status = self.Configurator.Update.Set(Organization, Repository, Branch, VersionPath, Find, Token, self.data.Update['SkipCheck'])
         if not type(status) == list:
             self.StatusLabel.config(text="Unable to connect to the internet, config saved.")
-            self.ConfigStatus[1] = True
+            self.ConfigurationStatus['Updater']['Complete'] = True
             self.UpdateStatus()
         elif all(element == None for element in status):
-            self.ConfigStatus[1] = True
+            self.ConfigurationStatus['Updater']['Complete'] = True
             self.UpdateStatus()
             self.StatusLabel.config(text="Done!")
             self.ClearConfigure()
@@ -498,7 +502,7 @@ class GUI:
                         self.data.MinimumPythonVersion.get("1.0", "end-1c"), self.data.packages)
 
         if all(element == None for element in status):
-            self.ConfigStatus[0] = True
+            self.ConfigurationStatus['Setup']['Complete'] = True
             self.UpdateStatus()
             self.StatusLabel.config(text="Done!")
             self.ClearConfigure()
@@ -612,7 +616,7 @@ class GUI:
         status = self.Configurator.Launch.Set(ProjectRoot, ProjectMain, self.data.codes, SkipCheck)
         if all(element == None for element in status):
             self.data = self.Storage()
-            self.ConfigStatus[2] = True
+            self.ConfigurationStatus['Launcher']['Complete'] = True
             self.UpdateStatus()
             self.StatusLabel.config(text="Done!")
             self.ClearConfigure()

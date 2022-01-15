@@ -174,7 +174,7 @@ class GUI:
         if not self.Launch.Initialize():
             self.LaunchLoop()
             return False
-        self.StatusLabel.config(text=f"Found Python {config.USER_CONFIGURATION['Setup']['PythonVersion']}. Starting Setup...")
+        self.StatusLabel.config(text=f"Found Python {config.CONFIGURATION['Setup']['PythonVersion']}. Starting Setup...")
         self.StatusLabel.pack(pady=20)
         self.FinishLaunch()
         return True
@@ -183,8 +183,8 @@ class GUI:
         self.Frames.Launch_Failure = tk.Frame(self.Frames.Launch, background=s.FRAME_BG)
         self.Frames.Launch_Failure.grid_propagate(0)
         self.Frames.Launch_Failure.pack(fill='both', side='left', expand='True')
-        gh.LargeLabel(self.Frames.Launch_Failure, text=f"Unable to locate Python {config.USER_CONFIGURATION['Setup']['PythonVersion']}", bg=0).pack()
-        gh.LargeLabel(self.Frames.Launch_Failure, text=f"Please install Python {config.USER_CONFIGURATION['Setup']['PythonVersion']} and try again", bg=0).pack()
+        gh.LargeLabel(self.Frames.Launch_Failure, text=f"Unable to locate Python {config.CONFIGURATION['Setup']['PythonVersion']}", bg=0).pack()
+        gh.LargeLabel(self.Frames.Launch_Failure, text=f"Please install Python {config.CONFIGURATION['Setup']['PythonVersion']} and try again", bg=0).pack()
         gh.Button(self.Frames.Launch_Failure, text="Downloads page", command=lambda: webbrowser.open("https://www.python.org/downloads/")).pack()
 
         while True:

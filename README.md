@@ -42,12 +42,6 @@ Increase project productivity and provide features easily. Once installed as a g
 
 ----
 
-## File Structure
- - userconfig.json (stores configuration for project)
- - confpath.txt (stores relative path to userconfig)
-
-----
-
 ## Using pyLaunch
  1. Download/place in your project's root directory
     - Git submodule

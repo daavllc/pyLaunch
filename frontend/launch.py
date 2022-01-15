@@ -29,7 +29,7 @@ class Launcher:
         self.PyPath = GetPython()
         if self.PyPath is None:
             print(f"Uh oh, we couldn't find the required python version...")
-            print(f"Please install Python {config.USER_CONFIGURATION['Setup']['PythonVersion']} and try again")
+            print(f"Please install Python {config.CONFIGURATION['Setup']['PythonVersion']} and try again")
             if 'y' in input("Open webrowser to download? (y/N) > "):
                 webbrowser.open("https://www.python.org/downloads/")
             input("Press enter to exit")
@@ -50,16 +50,16 @@ class Launcher:
         ReturnValue = None
         UserCodes = []
         UserArgs = []
-        for key, value in config.USER_CONFIGURATION['Launch']['ErrorCodes'].items():
+        for key, value in config.CONFIGURATION['Launch']['ErrorCodes'].items():
             UserCodes.append(int(key))
             UserArgs.append(value)
     
         def call(args: str = ""):
             try:
                 if args == "":
-                    subprocess.check_call([f"{self.PyPath}", f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']}"])
+                    subprocess.check_call([f"{self.PyPath}", f"{config.CONFIGURATION['Launch']['ProjectRoot']}{config.CONFIGURATION['Launch']['ProjectMain']}"])
                 else:
-                    command = [f"{self.PyPath}", f"{config.USER_CONFIGURATION['Launch']['ProjectRoot']}{config.USER_CONFIGURATION['Launch']['ProjectMain']}"]
+                    command = [f"{self.PyPath}", f"{config.CONFIGURATION['Launch']['ProjectRoot']}{config.CONFIGURATION['Launch']['ProjectMain']}"]
                     args = args.split(" ")
                     for arg in args:
                         command.append(arg)
@@ -68,7 +68,7 @@ class Launcher:
             except subprocess.CalledProcessError as e:
                 return e.returncode
 
-        if config.USER_CONFIGURATION['Launch']['SkipCheck']:
+        if config.CONFIGURATION['Launch']['SkipCheck']:
             call()
             sys.exit(0)
 
@@ -93,7 +93,7 @@ class Launcher:
                     continue
             print("-----------------")
             print(f"It looks like something went wrong... Error: {ReturnValue}")
-            print(f"Feel free to submit an issue at https://github.com/{config.USER_CONFIGURATION['Update']['Organization']}/{config.USER_CONFIGURATION['Update']['Repository']}/issues")
+            print(f"Feel free to submit an issue at https://github.com/{config.CONFIGURATION['Update']['Organization']}/{config.CONFIGURATION['Update']['Repository']}/issues")
             if 'n' in input("Reload? (Y/n) > "):
                 sys.exit(0)
             ReturnValue = None
@@ -112,22 +112,9 @@ def GetPython():
         item = item.split(os.sep)
         if len(item) < 1:
             continue
-        if item[-1] == config.USER_CONFIGURATION['Setup']['PythonFolder']:
+        if item[-1] == config.CONFIGURATION['Setup']['PythonFolder']:
             return(f"{os.sep}".join(item) + f"{os.sep}python.exe")
     return None
-
-def old():
-    if not os.path.exists("confpath.txt"):
-        print("It looks like pyLaunch isn't configured. Please run 'start.py' to configure it.")
-        input("Press enter to exit")
-        sys.exit(0)
-    with open("confpath.txt", "r", encoding="utf-8") as f:
-        lines = f.readlines()
-        path = lines[0].strip()
-        if os.name == "nt":
-            path = path.replace("/", "\\")
-        with open(path, "r", encoding="utf-8") as f:
-            conf = json.load(f)
 
 if __name__ == "__main__":
     print("This script is intended to be run from start.py")

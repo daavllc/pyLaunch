@@ -87,8 +87,8 @@ class CUI:
     def InitLaunch(self):
         self.Launch = Launcher()
         if not self.Launch.Initialize():
-            print(f"Unable to locate Python {config.USER_CONFIGURATION['Setup']['PythonVersion']}")
-            print(f"Please install Python {config.USER_CONFIGURATION['Setup']['PythonVersion']} and try again")
+            print(f"Unable to locate Python {config.CONFIGURATION['Setup']['PythonVersion']}")
+            print(f"Please install Python {config.CONFIGURATION['Setup']['PythonVersion']} and try again")
             if 'y' in input("Open webrowser to download? (y/N) > "):
                 webbrowser.open("https://www.python.org/downloads/")
             return False

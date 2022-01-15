@@ -15,7 +15,6 @@ import argparse
 import os
 import sys
 import platform
-import shutil
 import urllib.request
 
 import helpers.config as config
@@ -84,9 +83,6 @@ def main():
     log.debug(f"Launching with {platform.platform()} on {platform.machine()}")
     if sys.version is not None:
         log.debug(f"Using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
-    config.PATH_USERCONFIG = config.PATH_ROOT
-    with open("confpath.txt", "w", encoding="utf-8") as f:
-        f.write(config.FILE_USERCONFIG + "\n")
 
     if args.Update:
         log.info(f"Checking for update")
@@ -161,10 +157,10 @@ def main():
     cfgr = Configurator.Get()
     if args.Modify:
         log.debug("Creating new configuration due to modify argument")
-        if os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILE_USERCONFIG}"):
+        if os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILENAME_CONFIGURATION}"):
             cfgr.Load()
         NewConfiguration(cfgr, args)
-    if not os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILE_USERCONFIG}"):
+    if not os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILENAME_CONFIGURATION}"):
         log.debug("Configuration file not found, creating new")
         NewConfiguration(cfgr, args)
     
@@ -187,7 +183,7 @@ def NewConfiguration(cfgr, args):
 
 def LaunchConfiguration(cfgr, args):
     log.info("Launching configuration")
-    config.USER_CONFIGURATION = cfgr.Configuration
+    config.CONFIGURATION = cfgr.Configuration
     ui = None
     if args.UI == "GUI":
         ui = GUI()
@@ -197,23 +193,14 @@ def LaunchConfiguration(cfgr, args):
     sys.exit(0)
 
 def Reset():
-    if os.path.exists("confpath.txt"):
-        with open("confpath.txt", "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            lines = lines[0].strip()
-            if os.name == "nt":
-                lines = lines.replace('\\', '/')
-            if os.path.exists(lines):
-                os.remove(lines)
-                print(f"Deleted: {config.FILE_USERCONFIG}")
-        os.remove("confpath.txt")
-        print(f"Deleted: confpath.txt")
-    elif os.path.exists(config.FILE_USERCONFIG):
-        os.remove(config.FILE_USERCONFIG)
-        print(f"Deleted: {config.FILE_USERCONFIG}")
+    import shutil
+    if os.path.exists(config.FILENAME_CONFIGURATION):
+        os.remove(config.FILENAME_CONFIGURATION)
+        print(f"Deleted: {config.FILENAME_CONFIGURATION}")
 
-    shutil.rmtree("logs")
-    print(f"Deleted: logs")
+    if os.path.exists("logs"):
+        shutil.rmtree("logs")
+        print(f"Deleted: logs")
     log.info("Successfully reset!")
     if 'n' in input("Start normally? (Y/n) > "):
         sys.exit(0)
