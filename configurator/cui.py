@@ -1,3 +1,5 @@
+
+import helpers.config as config
 class CUI:
     def __init__(self, configurator):
         self.Configurator = configurator
@@ -20,7 +22,7 @@ class CUI:
         print("\tGitHub details for update checking/downloading")
         print("Launch")
         print("\tProvides error catching, and python reloading")
-        print("Additional documentation can be found at https://docs.daav.us/pyLaunch")
+        print(f"Additional documentation can be found at {config.LINK_DOCUMENTATION}")
         input("Press enter to begin configuring pyLaunch:Updater")
         self._ConfigureUpdate()
         self._ConfigureSetup()

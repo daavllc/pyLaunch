@@ -43,35 +43,6 @@ Increase project productivity and provide features easily. Once installed as a g
  - userconfig.json (stores configuration for project)
  - confpath.txt (stores relative path to userconfig)
 
-## Configuration
-
-### [Setup](https://github.com/daavofficial/pyLaunch/blob/main/frontend/setup.py)
- - Automatic dependancy installation
- - Variables:
-   - Python Version
-   - Minimum Python Version
-   - Python Folder (Internal)
-   - Packages (list of required packages, used as pypiName:importName [ex: pyyaml:yaml])
-  
-### [Update](https://github.com/daavofficial/pyLaunch/blob/main/frontend/update.py)
- - Automatic update checking, downloading and installing
- - Variables:
-   - Organization
-   - Repository
-   - Branch
-   - VersionPath (Project path to file containing version [ex: /config.py])
-   - Find (Line to grab from VersionPath [ex: VERSION = ])
-   - Token (GitHub token for private repositories)
-   - Skip Checking for updates
-
-### [Launch](https://github.com/daavofficial/pyLaunch/blob/main/frontend/launch.py)
- - Locates required Python version, and provides custom error catching, allowing project reloading for faster development, or launching with arguments
- - Variables:
-   - Project Root (Relative path to project root [ex: ..])
-   - Project Main (project path to the 'main' file [ex: /start.py])
-   - Error Codes (list of error codes, used as code:argument [ex: -2:-UI GUI])
-   - Skip error code checking
-
 ----
 
 ## Installation

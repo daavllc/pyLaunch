@@ -37,6 +37,7 @@ def main():
     parser.add_argument("-W", "--logwrite", dest="LogWrite", help="skip writing logs to file", action='store_true')
     parser.add_argument("-P", "--logprint", dest="LogPrint", help="skip printing logs to console", action='store_true')
     parser.add_argument("-u", "--update", dest="Update", help="check for update", action='store_true')
+    parser.add_argument("-rn", "--release-notes", dest="ReleaseNotes", help="show release notes", action='store_true')
     parser.add_argument("-UI", "--user-interface", dest="UI", help="interface for pyLaunch launcher", choices=['CUI', 'GUI'], default='GUI')
     parser.add_argument("-t", "--theme", dest="Theme", help="color theme for GUI [default=dark]", choices=s.GetThemes(), default='dark')
 
@@ -91,7 +92,7 @@ def main():
         log.info(f"Checking for update")
         CheckedVersion = None
         try:
-            response = urllib.request.urlopen(f"https://raw.githubusercontent.com/daavofficial/pyLaunch/main/helpers/config.py")
+            response = urllib.request.urlopen(f"https://raw.githubusercontent.com/{config.GIT_ORG}/{config.GIT_REPO}/main/helpers/config.py")
             content = response.read().decode("UTF-8").split("\n")
             for line in content:
                 if "VERSION = " in line:
@@ -117,6 +118,22 @@ def main():
             print(f"Up to date! [{config.VERSION}]")
         input("Press enter to exit")
         sys.exit(0)
+
+    if args.ReleaseNotes:
+        from helpers.changelog import Changelog
+        import datetime as dt
+        log.info(f"Checking git commits for release notes")
+        cl = Changelog(config.GIT_ORG, config.GIT_REPO)
+        change = cl.Get()
+        for item in change:
+            date = dt.datetime.fromisoformat(item['date'])
+            print(f"{date.strftime('%Y-%m-%d %H:%M:%S')} : {item['sha']}")
+            print(f"Author: {item['author']['name']} - {item['author']['email']}\n")
+            print(item['message'])
+            print("----")
+        input("Press enter to exit")
+        sys.exit(0)
+
 
     if args.Count:
         from helpers.count import Counter as Counter
