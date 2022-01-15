@@ -33,6 +33,9 @@ Increase project productivity and provide features easily. Once installed as a g
    - [X] [GUI](https://github.com/daavofficial/pyLaunch/blob/main/configurator/gui.py)
      - [X] Themes/color schemes (dark/light)
      - [X] Modify all configuration options
+ - [ ] Language Support
+    - [ ] C++
+    - [X] Python
  - [ ] Pull private repositories
  - [X] Arguments
  - [X] Saveable configurations
@@ -45,20 +48,35 @@ Increase project productivity and provide features easily. Once installed as a g
 
 ----
 
-## Installation
- - GitHub project
-   1. Open git terminal in your repository folder
-   2. Run `git submodule add https://github.com/daavofficial/pyLaunch.git`
-   3. Open the new `pyLaunch` folder
-   4. Launch
-      - Run [start.py](https://github.com/daavofficial/pyLaunch/blob/main/start.py)
-      - Double Click [example-launch-gui.bat](https://github.com/daavofficial/pyLaunch/blob/main/example-launch-gui.bat) (Windows)
-   5. Configure, by following the prompts provided
+## Using pyLaunch
+ 1. Download/place in your project's root directory
+    - Git submodule
+      1. Open git terminal in your repository folder
+      2. Run `git submodule add https://github.com/daavofficial/pyLaunch.git`
+    - Manual
+      1. Click the 'Code' button near the top right corner > Download ZIP
+      2. Extract the zip file
+      3. Move the `pyLaunch` folder into your project's root directory
+ 2. Create your project's launch script
+      - Example (Windows)
+        - Right Click > New > Text Document and add the following:
+          - `@echo off`
+          - `python "pyLaunch/start.py`
+        - File > Save As
+        - Save as type: `All Files`
+        - File name: `start.bat` or whatever you want to name it, with the .bat extension
+ 3. Launch the new `start` script
+ 4. Configure your project with pyLaunch's Configurator
+ 5. Update your project's .gitignore
+    - Add the following to your .gitignore file
+    - `pyLaunch/logs`
 
-## Download from source
- 1. `git clone https://github.com/daavofficial/pyLaunch.git`
+## Contributing to pyLaunch
+ 1. Download from source
+    - `git clone https://github.com/daavofficial/pyLaunch.git`
+    - 'Code' button near the top right > Download ZIP, extract the file
  3. Open 'pyLaunch' folder.
- 4. Run [start.py](https://github.com/daavofficial/pyLaunch/blob/main/start.py) or use an example-launch file
+ 4. Have fun! Read our [documentation](https://docs.daav.us/pyLaunch) for more under-the-hood details
 
 ## License
 Copyright © 2022 DAAV, LLC
