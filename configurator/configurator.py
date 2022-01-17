@@ -25,7 +25,6 @@ class Configurator:
             self.Launch = self._Launch(self)
 
     def New(self, UI: str) -> bool:
-        """ pyLaunch has not been configured, so let's configure it """
         if UI == "GUI":
             self.UI = GUI(self)
         else:
@@ -34,8 +33,11 @@ class Configurator:
         
 
     def Load(self) -> None:
-        """ pyLaunch is configured, load that configuration and execute """
         self.Configuration.data = Deserialize()
+
+    # --==========================================================================--
+    # Input validation/helper functions for defining configuration values
+    # --==========================================================================--
 
     def Save(self) -> None:
         Serialize(self.Configuration.data)

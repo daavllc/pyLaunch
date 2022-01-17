@@ -155,10 +155,10 @@ def main():
     s.Set(args.Theme)
 
     cfgr = Configurator.Get()
+    if os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILENAME_CONFIGURATION}"):
+        cfgr.Load()
     if args.Modify:
         log.debug("Creating new configuration due to modify argument")
-        if os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILENAME_CONFIGURATION}"):
-            cfgr.Load()
         NewConfiguration(cfgr, args)
     if not os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILENAME_CONFIGURATION}"):
         log.debug("Configuration file not found, creating new")

@@ -131,6 +131,10 @@ class GUI:
         self.Frames.CGR.grid_propagate(0)
         self.Frames.CGR.pack(fill='both', side='bottom', expand='False')
 
+    def FocusNextWidget(event):
+        event.widget.tk_focusNext().focus()
+        return("break")
+
     def PopupStartup(self):
         popup = tk.Toplevel(self.ws, borderwidth=10, background=s.FRAME_BG_ALT)
         popup.geometry("350x270")
@@ -366,15 +370,19 @@ class GUI:
         self.Configuring = True
         self.fr_cfr_title.config(text="Updater Configuration")
 
-        self.data.Update = {'SkipCheck' : tk.BooleanVar()}
+        self.data.Update = {'SkipCheck' : tk.BooleanVar(value=self.Configurator.Configuration.data['Update']['SkipCheck'])}
 
         gh.Checkbutton(self.Frames.CGR, text="Skip update checking", variable=self.data.Update['SkipCheck'], command=self.SkipUpdate).grid(sticky='w', column=0, row=0)
 
         row = 1
         for text in ['Organization', 'Repository', 'Branch', 'Version Path', 'Find', 'Token']:
             gh.Label(self.Frames.CGR, justify="left", text=text + ":", bg=0).grid(sticky='w', column=0, row=row)
-            self.data.Update[text.replace(" ", "")] = gh.Text(self.Frames.CGR, width=40, height=1)
-            self.data.Update[text.replace(" ", "")].grid(sticky='w', column=1, row=row, pady=5)
+            key = text.replace(" ", "")
+            self.data.Update[key] = gh.TabableInput(self.Frames.CGR, width=40)
+            value = self.Configurator.Configuration.data['Update'][key]
+            if value is not None:
+                self.data.Update[key].insert("1.0", value)
+            self.data.Update[key].grid(sticky='w', column=1, row=row, pady=5)
             row += 1
 
         self.Frames.CGR_UpdateButtons = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
@@ -433,13 +441,19 @@ class GUI:
         self.Frames.CGR_PythonVersion = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
         self.Frames.CGR_PythonVersion.grid(sticky='w', column=0, row=0, pady=5)
         gh.Label(self.Frames.CGR_PythonVersion, justify="left", text="Python Version:", bg=0).grid(sticky='w', column=0, row=0)
-        self.data.PythonVersion = gh.Text(self.Frames.CGR_PythonVersion, width=5, height=1, bg=0)
+        self.data.PythonVersion = gh.TabableInput(self.Frames.CGR_PythonVersion, width=5, bg=0)
+        value = self.Configurator.Configuration.data['Setup']['PythonVersion']
+        if value is not None:
+                self.data.PythonVersion.insert("1.0", value)
         self.data.PythonVersion.grid(sticky='w', column=1, row=0, padx=5, pady=5)
 
         self.Frames.CGR_MinimumPythonVersion = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
         self.Frames.CGR_MinimumPythonVersion.grid(sticky='w', column=0, row=1, pady=5)
         gh.Label(self.Frames.CGR_MinimumPythonVersion, justify="left", text="Minimum Python Version:", bg=0).grid(sticky='w', column=0, row=0)
-        self.data.MinimumPythonVersion = gh.Text(self.Frames.CGR_MinimumPythonVersion, width=5, height=1, bg=0)
+        self.data.MinimumPythonVersion = gh.TabableInput(self.Frames.CGR_MinimumPythonVersion, width=5, bg=0)
+        value = self.Configurator.Configuration.data['Setup']['MinimumPythonVersion']
+        if value is not None:
+                self.data.MinimumPythonVersion.insert("1.0", value)
         self.data.MinimumPythonVersion.grid(sticky='w', column=1, row=0, padx=5, pady=5)
         
         self.Frames.CGR_Packages = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
@@ -448,7 +462,7 @@ class GUI:
         self.Frames.CGR_Package_Input = tk.Frame(self.Frames.CGR_Packages, background=s.FRAME_BG)
         self.Frames.CGR_Package_Input.grid(sticky='n', column=0, row=0, padx=5)
         gh.Label(self.Frames.CGR_Package_Input, justify="left", text="Packages:", bg=0).grid(sticky='w', column=0, row=0)
-        self.data.PackageName = gh.Text(self.Frames.CGR_Package_Input, width=20, height=1, bg=0)
+        self.data.PackageName = gh.TabableInput(self.Frames.CGR_Package_Input, width=20, bg=0)
         self.data.PackageName.grid(sticky='w', column=0, row=1, padx=5, pady=5)
         gh.Button(self.Frames.CGR_Package_Input, text="Add", command=self.AddPackage, bg=0).grid(column=1, row=1, pady=5)
 
@@ -460,6 +474,11 @@ class GUI:
         self.StatusLabel = gh.Label(self.Frames.CGR_Package_Input, text="", width=20, wraplength=200, bg=0)
         self.StatusLabel.grid(sticky='s')
         gh.Button(self.Frames.CGR_Package_Input, text="Finish", command=self.SetSetup, bg=1).grid(sticky='s', pady=20)
+
+        if not self.Configurator.Configuration.data['Setup']['Packages'] == {}:
+            for key, value in self.Configurator.Configuration.data['Setup']['Packages'].items():
+                self.data.packages[key] = value
+            self.DrawPackageList()
 
     def DrawPackageList(self):
         for row in self.data.tk_items:
@@ -528,20 +547,26 @@ class GUI:
 
         self.data.codes = {}
         self.data.tk_items = []
-        self.data.LaunchSkipCheck = tk.BooleanVar()
+        self.data.LaunchSkipCheck = tk.BooleanVar(value=self.Configurator.Configuration.data['Launch']['SkipCheck'])
 
         gh.Checkbutton(self.Frames.CGR, text="Skip update checking", variable=self.data.LaunchSkipCheck, command=self.SkipLaunchErrors).grid(sticky='w', column=0, row=0)
 
         self.Frames.CGR_ProjectPath = tk.Frame(self.Frames.CGR, background=s.FRAME_BG_ALT)
         self.Frames.CGR_ProjectPath.grid(sticky='w', column=0, row=1, pady=5)
         gh.Label(self.Frames.CGR_ProjectPath, justify="left", text="Project Root:", bg=0).grid(sticky='w', column=0, row=0)
-        self.data.ProjectPath = gh.Text(self.Frames.CGR_ProjectPath, width=30, height=1)
+        self.data.ProjectPath = gh.TabableInput(self.Frames.CGR_ProjectPath, width=30)
+        value = self.Configurator.Configuration.data['Launch']['ProjectRoot']
+        if value is not None:
+            self.data.ProjectPath.insert("1.0", value)
         self.data.ProjectPath.grid(sticky='w', column=1, row=0)
 
         self.Frames.CGR_ProjectMain = tk.Frame(self.Frames.CGR, background=s.FRAME_BG_ALT)
         self.Frames.CGR_ProjectMain.grid(sticky='w', column=0, row=2, pady=5)
         gh.Label(self.Frames.CGR_ProjectMain, justify="left", text="Project Main:", bg=0).grid(sticky='w', column=0, row=0)
-        self.data.ProjectMain = gh.Text(self.Frames.CGR_ProjectMain, width=30, height=1)
+        self.data.ProjectMain = gh.TabableInput(self.Frames.CGR_ProjectMain, width=30)
+        value = self.Configurator.Configuration.data['Launch']['ProjectMain']
+        if value is not None:
+            self.data.ProjectMain.insert("1.0", value)
         self.data.ProjectMain.grid(sticky='w', column=1, row=0)
 
         self.Frames.CGR_ErrorCodes = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
@@ -551,7 +576,7 @@ class GUI:
         self.Frames.CGR_ErrorCodes_Input.grid(sticky='n', column=0, row=0)
 
         gh.Label(self.Frames.CGR_ErrorCodes_Input, justify="left", text="Error Codes:", bg=0).grid(sticky='w', column=0, row=0)
-        self.data.ErrorCode = gh.Text(self.Frames.CGR_ErrorCodes_Input, width=20, height=1, bg=0)
+        self.data.ErrorCode = gh.TabableInput(self.Frames.CGR_ErrorCodes_Input, width=20, bg=0)
         self.data.ErrorCode.grid(sticky='w', column=0, row=1, padx=5)
         gh.Button(self.Frames.CGR_ErrorCodes_Input, text="Add", command=self.AddCode, bg=1).grid(column=1, row=1, padx=5, pady=5)
 
@@ -564,6 +589,11 @@ class GUI:
         self.StatusLabel = gh.Label(self.Frames.CGR_ErrorCodes_Input, text="", width=20, wraplength=200, bg=0)
         self.StatusLabel.grid(sticky='s')
         gh.Button(self.Frames.CGR_ErrorCodes_Input, text="Finish", command=self.SetLaunch, bg=1).grid(sticky='s', pady=20)
+
+        if not self.Configurator.Configuration.data['Launch']['ErrorCodes'] == {}:
+            for key, value in self.Configurator.Configuration.data['Launch']['ErrorCodes'].items():
+                self.data.codes[key] = value
+            self.DrawCodeList()
 
     def SkipLaunchErrors(self):
         self.Configurator.Launch.SetSkipCheck(self.data.LaunchSkipCheck.get())

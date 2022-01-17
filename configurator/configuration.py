@@ -21,7 +21,7 @@ class Configuration:
                 Branch = None, # Branch to check [ex: main]
                 VersionPath = None, # project path to file containing version [ex: /src/config/config.py]
                 Find = None, # line to grab for version [ex: VERSION = ]
-                Token = False, # GitHub token for private repositories
+                Token = None, # GitHub token for private repositories
 
                 SkipCheck = False # if true: don't automatically check for updates
             ),

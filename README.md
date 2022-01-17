@@ -24,7 +24,7 @@ Increase project productivity and provide features easily. Once installed as a g
      - [X] Color Themes
      - [X] Update/Launch/Setup
  - [X] Configurator UI
-   - [ ] Modify previous configuration
+   - [X] Modify previous configuration
    - [X] Better input protection
    - [X] [CUI](https://github.com/daavofficial/pyLaunch/blob/main/configurator/cui.py)
      - [X] Color Themes
