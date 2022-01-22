@@ -388,8 +388,8 @@ class GUI:
         self.Frames.CGR_UpdateButtons = tk.Frame(self.Frames.CGR, background=s.FRAME_BG)
         self.Frames.CGR_UpdateButtons.grid(sticky='w', column=0, row=row, pady=5)
         self.StatusLabel = gh.LargeLabel(self.Frames.CGR_UpdateButtons, text="", bg=0)
-        self.StatusLabel.grid(sticky='s')
-        gh.Button(self.Frames.CGR_UpdateButtons, text="Finish", command=self.SetUpdate, bg=1).grid(sticky='s', pady=20)
+        self.StatusLabel.grid(column=0, row=0, sticky='s')
+        gh.Button(self.Frames.CGR_UpdateButtons, text="Finish", command=self.SetUpdate, bg=1).grid(column=0, row=1, sticky='s', pady=20)
 
     def SkipUpdate(self):
         self.Configurator.Update.SetSkipCheck(self.data.Update['SkipCheck'].get())
@@ -413,17 +413,21 @@ class GUI:
             self.ConfigurationStatus['Updater']['Complete'] = True
             self.UpdateStatus()
         elif all(element == None for element in status):
-            self.ConfigurationStatus['Updater']['Complete'] = True
-            self.UpdateStatus()
-            self.StatusLabel.config(text="Done!")
-            self.ClearConfigure()
-            self.log.info(f"Stored Update: {self.Configurator.Configuration.data['Update']}")
+            self.SaveUpdate()
         else:
             for stat in status:
                 if stat is not None:
                     self.StatusLabel.config(text=stat)
+                    gh.Button(self.Frames.CGR_UpdateButtons, text="Save anyway", command=self.SaveUpdate, bg=1).grid(column=1, row=1)
                     break
             self.log.info(f"Update configuration issues: {str(status)}")
+
+    def SaveUpdate(self):
+        self.ConfigurationStatus['Updater']['Complete'] = True
+        self.UpdateStatus()
+        self.StatusLabel.config(text="Done!")
+        self.ClearConfigure()
+        self.log.info(f"Stored Update: {self.Configurator.Configuration.data['Update']}")
 
 ##########################################################################################
 #
