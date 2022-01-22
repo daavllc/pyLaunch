@@ -30,7 +30,7 @@ log = None
 def main():
     global log
     s = Style.Get()
-    parser = argparse.ArgumentParser(add_help=True, description="Python project setup, updater, and pyLaunch")
+    parser = argparse.ArgumentParser(add_help=True, description="Python project setup, updater, and launcher")
     parser.add_argument("-H", "--hide", dest="Hide", help="don't show pyLaunch splash screen", action='store_true')
     parser.add_argument("-l", "--loglevel", dest="LogLevel", help="log level for printing and writing to file [default=info]", choices=['debug', 'info', 'warn', 'error', 'critical', 'none'], default='info')
     parser.add_argument("-W", "--logwrite", dest="LogWrite", help="skip writing logs to file", action='store_true')
@@ -39,6 +39,8 @@ def main():
     parser.add_argument("-rn", "--release-notes", dest="ReleaseNotes", help="show release notes", action='store_true')
     parser.add_argument("-UI", "--user-interface", dest="UI", help="interface for pyLaunch launcher", choices=['CUI', 'GUI'], default='GUI')
     parser.add_argument("-t", "--theme", dest="Theme", help="color theme for GUI [default=dark]", choices=s.GetThemes(), default='dark')
+    parser.add_argument("-cp", "--config-path", dest="ConfigurationPath", help="path to save configuration [ex: settings]", default='.')
+    parser.add_argument("-p", "--pylaunch-path", dest="pyLaunchPath", help="path to check for pyLaunch folder [ex: dependancies]", default='.')
 
     configurator = parser.add_argument_group("configurator", "configurator arguments")
     configurator.add_argument("-R", "--reset", dest="Reset", help="clear logs and configuration", action='store_true')
@@ -47,10 +49,10 @@ def main():
     configurator.add_argument("-CI", "--interface", dest="CI", help="interface for pyLaunch configurator [default=GUI]", choices=['CUI', 'GUI'], default='GUI')
 
     counter = parser.add_argument_group("counter", "recursivly count a folder's files with extention")
-    counter.add_argument("-c", "--count", dest="Count", help="enable counter, show lines and files", action='store_true')
-    counter.add_argument("-cn", "--counter-name", dest="CtrName", help="name of project [ex: pyLauncher]")
-    counter.add_argument("-cp", "--counter-path", dest="CtrPath", help="relative path to project [ex: ..]")
-    counter.add_argument("-cx", "--counter-extentions", dest="CtrExtensions", help="count files with these extensions [ex: .py,.bat]")
+    counter.add_argument("-C", "--count", dest="Count", help="enable counter, show lines and files", action='store_true')
+    counter.add_argument("-Cn", "--counter-name", dest="CtrName", help="name of project [ex: Project-Management]")
+    counter.add_argument("-Cp", "--counter-path", dest="CtrPath", help="relative path to project [ex: ..]")
+    counter.add_argument("-Cx", "--counter-extentions", dest="CtrExtensions", help="count files with these extensions [ex: .py,.bat]")
 
     args = parser.parse_args()
     config.LOG_CONF = dict(level = args.LogLevel, print = not args.LogPrint, write = not args.LogWrite)
@@ -67,19 +69,26 @@ def main():
         print(f" Licensed under the MIT license. See LICENSE for details.\n")
 
     # Setup paths
-    config.PATH_ROOT = os.path.abspath(".")
-    if not config.PATH_ROOT.split(os.sep)[-1] == "pyLaunch":
-        if os.path.exists(f"{config.PATH_ROOT}{os.sep}pyLaunch"):
-            config.PATH_ROOT = f"{config.PATH_ROOT}{os.sep}pyLaunch"
-            os.chdir(config.PATH_ROOT)
-        else:
-            print("Unable to locate pyLaunch directory.")
-            input("Press enter to exit...")
-            sys.exit(0)
+    config.PATH_CONFIGURATION = os.path.abspath(f"{args.ConfigurationPath}{os.sep}{config.FILENAME_CONFIGURATION}")
+    pyLaunchPath = os.path.abspath(args.pyLaunchPath)
+    if os.path.exists(f"{pyLaunchPath}{os.sep}pyLaunch"): # First check if the supplied pyLaunch path exists
+        config.PATH_ROOT = f"{pyLaunchPath}{os.sep}pyLaunch"
+        os.chdir(config.PATH_ROOT)
+    elif os.path.abspath(".").split(os.sep)[-1] == "pyLaunch": # Then check if pyLaunch is being launched directly/from it's own folder
+        log.warn("pyLaunch is not intended to be launched from it's own folder")
+        config.PATH_ROOT = os.path.abspath(".")
+        os.chdir(config.PATH_ROOT)
+    elif os.path.exists(f"{os.path.abspath('.')}{os.sep}pyLaunch"): # Then check if pyLaunch is a folder inside the current directory
+        config.PATH_ROOT = f"{os.path.abspath('.')}{os.sep}pyLaunch"
+        os.chdir(config.PATH_ROOT)
+    else:
+        print("Unable to locate pyLaunch directory.")
+        print("\tUse -p to specify the path to the pyLaunch folder")
+        input("Press enter to exit...")
+        sys.exit(0)
 
-    if not os.path.exists("logs"):
-        os.mkdir("logs")
     log.debug(f"{config.PATH_ROOT = }")
+    log.debug(f"{config.PATH_CONFIGURATION = }")
     log.debug(f"Launching with {platform.platform()} on {platform.machine()}")
     if sys.version is not None:
         log.debug(f"Using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
@@ -155,12 +164,12 @@ def main():
     s.Set(args.Theme)
 
     cfgr = Configurator.Get()
-    if os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILENAME_CONFIGURATION}"):
+    if os.path.exists(config.PATH_CONFIGURATION):
         cfgr.Load()
     if args.Modify:
         log.debug("Creating new configuration due to modify argument")
         NewConfiguration(cfgr, args)
-    if not os.path.exists(f"{config.PATH_ROOT}{os.sep}{config.FILENAME_CONFIGURATION}"):
+    if not os.path.exists(config.PATH_CONFIGURATION):
         log.debug("Configuration file not found, creating new")
         NewConfiguration(cfgr, args)
     
@@ -194,9 +203,9 @@ def LaunchConfiguration(cfgr, args):
 
 def Reset():
     import shutil
-    if os.path.exists(config.FILENAME_CONFIGURATION):
-        os.remove(config.FILENAME_CONFIGURATION)
-        print(f"Deleted: {config.FILENAME_CONFIGURATION}")
+    if os.path.exists(config.PATH_CONFIGURATION):
+        os.remove(config.PATH_CONFIGURATION)
+        print(config.PATH_CONFIGURATION)
 
     if os.path.exists("logs"):
         shutil.rmtree("logs")

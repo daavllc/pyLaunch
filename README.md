@@ -51,11 +51,13 @@ Increase project productivity and provide features easily. Once installed as a g
       1. Click the 'Code' button near the top right corner > Download ZIP
       2. Extract the zip file
       3. Move the `pyLaunch` folder into your project's root directory
+         - If you want to move the `pyLaunch` folder somewhere else, please add the argument `-p [PATH TO DIRECTORY CONTAINING pyLaunch FOLDER]` to your start script
  2. Create your project's launch script
       - Example (Windows)
-        - Right Click > New > Text Document and add the following:
+        - Inside your project's root folder: Right Click > New > Text Document and add the following:
           - `@echo off`
-          - `python "pyLaunch/start.py`
+          - `python "pyLaunch/start.py -cp [PATH YOU WANT TO SAVE CONFIGURATION]`
+            - By default -cp uses whatever directory the start script is installed
         - File > Save As
         - Save as type: `All Files`
         - File name: `start.bat` or whatever you want to name it, with the .bat extension
