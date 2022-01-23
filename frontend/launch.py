@@ -53,13 +53,15 @@ class Launcher:
         for key, value in config.CONFIGURATION['Launch']['ErrorCodes'].items():
             UserCodes.append(int(key))
             UserArgs.append(value)
+
+        ProjectRoot = os.path.abspath(config.CONFIGURATION['Launch']['ProjectRoot'])
     
         def call(args: str = ""):
             try:
                 if args == "":
-                    subprocess.check_call([f"{self.PyPath}", f"{config.CONFIGURATION['Launch']['ProjectRoot']}{config.CONFIGURATION['Launch']['ProjectMain']}"])
+                    subprocess.check_call([f"{self.PyPath}", f"{ProjectRoot}{os.sep}{config.CONFIGURATION['Launch']['ProjectMain']}"])
                 else:
-                    command = [f"{self.PyPath}", f"{config.CONFIGURATION['Launch']['ProjectRoot']}{config.CONFIGURATION['Launch']['ProjectMain']}"]
+                    command = [f"{self.PyPath}", f"{ProjectRoot}{os.sep}{config.CONFIGURATION['Launch']['ProjectMain']}"]
                     args = args.split(" ")
                     for arg in args:
                         command.append(arg)
