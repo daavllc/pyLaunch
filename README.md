@@ -9,13 +9,13 @@ Increase project productivity and provide features easily. Once installed as a g
  - Langauge: Python 3.6+ (due to f-strings, tested on 3.10)
  - License: MIT
  - Dependancies: None
- - Documentation: [docs.daav.us](https://docs.daav.us/pyLaunch)
+ - Documentation: [daav.us/docs](https://daav.us/docs/pyLaunch)
 
 ----
 
 ## Current status/roadmap:
  - [X] Documentation
-   - [X] In-depth documentation at [docs.daav.us/pyLaunch](https://docs.daav.us/pyLaunch)
+   - [X] In-depth documentation
    - [X] Basic overview/help (CUI/GUI)
  - [X] Frontend UI
    - [X] [CUI](https://github.com/daavofficial/pyLaunch/blob/main/frontend/cui.py)
@@ -72,7 +72,7 @@ Increase project productivity and provide features easily. Once installed as a g
     - `git clone https://github.com/daavofficial/pyLaunch.git`
     - 'Code' button near the top right > Download ZIP, extract the file
  3. Open 'pyLaunch' folder.
- 4. Have fun! Read our [documentation](https://docs.daav.us/pyLaunch) for more under-the-hood details
+ 4. Have fun! Read our [documentation](https://daav.us/docs/pyLaunch) for more under-the-hood details
 
 ## License
 Copyright © 2022 DAAV, LLC
